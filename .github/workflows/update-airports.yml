@@ -17,15 +17,69 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download airports CSV
+      - name: Download and convert airports data
         run: |
-          curl -o docs/airports.csv https://ourairports.com/airports.csv
+          # Download CSV
+          curl -o airports.csv https://ourairports.com/airports.csv
+
+          # Convert CSV to JSON using Python
+          python3 << 'EOF'
+          import csv
+          import json
+
+          airports = []
+          with open('airports.csv', 'r', encoding='utf-8') as csvfile:
+              reader = csv.DictReader(csvfile)
+              for row in reader:
+                  # Extract relevant fields
+                  icao = (row.get('ident', '') or '').strip()
+                  gps = (row.get('gps_code', '') or '').strip()
+                  ident = (row.get('ident', '') or '').strip()
+
+                  airport_id = icao or gps or ident
+                  if not airport_id:
+                      continue
+
+                  # Parse coordinates and altitude
+                  try:
+                      lat = float(row.get('latitude_deg', '')) if row.get('latitude_deg') else None
+                  except (ValueError, TypeError):
+                      lat = None
+
+                  try:
+                      lon = float(row.get('longitude_deg', '')) if row.get('longitude_deg') else None
+                  except (ValueError, TypeError):
+                      lon = None
+
+                  try:
+                      alt = float(row.get('elevation_ft', '')) if row.get('elevation_ft') else None
+                  except (ValueError, TypeError):
+                      alt = None
+
+                  airports.append({
+                      'id': airport_id,
+                      'name': (row.get('name', '') or '').strip(),
+                      'type': (row.get('type', '') or '').strip(),
+                      'altitude_ft': alt,
+                      'lat': lat,
+                      'lon': lon
+                  })
+
+          # Write to JSON file
+          with open('docs/airports.json', 'w', encoding='utf-8') as jsonfile:
+              json.dump(airports, jsonfile, separators=(',', ':'))
+
+          print(f"Converted {len(airports)} airports to JSON")
+          EOF
+
+          # Clean up CSV
+          rm airports.csv
 
       - name: Commit and push if changed
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add docs/airports.csv
+          git add docs/airports.json
 
           # Check if there are changes to commit
           if git diff --staged --quiet; then

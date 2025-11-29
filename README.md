@@ -8,5 +8,5 @@ Generates a simple poster containing useful information:
 3. Check if the altitude information is missing for some (shows "UNKNOWN"). You can edit the json below to add it by hand and hit "Apply". (If you use "Find Nearby" again, your changes will be lost).
 4. Add/Remove airports/navaids from the json below as you like and hit "Apply". (If you use "Find Nearby" again, your changes will be lost).
 
-<img width="795" height="1240" alt="image" src="https://github.com/user-attachments/assets/66d3939a-c0c7-472a-b9c1-53b8f52c2c4f" />
+<img width="795" height="1240" alt="image" src="/docs/image.png" />
 

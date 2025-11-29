@@ -795,8 +795,6 @@
   <script src="https://unpkg.com/lucide@latest"></script>
   <!-- Leaflet JS -->
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
-  <!-- PapaParse for CSV parsing -->
-  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
 
   <script>
     const AIRPORT_TYPES = [
@@ -1328,45 +1326,10 @@
     }
 async function loadAirportDb() {
   try {
-    const res = await fetch("airports.csv");
+    const res = await fetch("airports.json");
     if (!res.ok) throw new Error("HTTP " + res.status);
 
-    const csvText = await res.text();
-    const parsed = Papa.parse(csvText, {
-      header: true,
-      dynamicTyping: false, // <-- keep everything as strings
-      skipEmptyLines: true
-    });
-
-    const rows = parsed.data;
-    const airports = [];
-
-    rows.forEach(row => {
-      // Always cast to string before trim
-      const icao  = ((row.icao_code  ?? "") + "").trim();
-      const gps   = ((row.gps_code   ?? "") + "").trim();
-      const ident = ((row.ident      ?? "") + "").trim();
-
-      const id = icao || gps || ident;
-      if (!id) return;
-
-      const latStr = (row.latitude_deg  ?? "").toString();
-      const lonStr = (row.longitude_deg ?? "").toString();
-      const altStr = (row.elevation_ft  ?? "").toString();
-
-      const lat = latStr !== "" ? Number(latStr) : null;
-      const lon = lonStr !== "" ? Number(lonStr) : null;
-      const alt = altStr !== "" ? Number(altStr) : null;
-
-      airports.push({
-        id,
-        name: ((row.name ?? "") + "").trim(),
-        type: ((row.type ?? "") + "").trim(),
-        altitude_ft: alt,
-        lat,
-        lon
-      });
-    });
+    const airports = await res.json();
 
     // Replace DB with real OurAirports data
     airportDb = airports;
@@ -1382,7 +1345,7 @@ async function loadAirportDb() {
     renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
     updateAirportMarkers();
   } catch (e) {
-    console.error("Failed to load OurAirports CSV, using fallback DB.", e);
+    console.error("Failed to load OurAirports JSON, using fallback DB.", e);
   }
 }
 
