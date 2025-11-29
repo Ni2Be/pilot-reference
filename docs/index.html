@@ -249,6 +249,40 @@
       background: #a93226;
     }
 
+    .airport-cell.highlighted {
+      animation: highlight-pulse 1s ease-out;
+      box-shadow: 0 0 0 3px #3498db;
+    }
+
+    @keyframes highlight-pulse {
+      0% {
+        box-shadow: 0 0 0 0 #3498db;
+      }
+      50% {
+        box-shadow: 0 0 0 6px rgba(52, 152, 219, 0.4);
+      }
+      100% {
+        box-shadow: 0 0 0 3px #3498db;
+      }
+    }
+
+    /* Pulsing marker effect */
+    .marker-pulse {
+      animation: marker-pulse-ring 1.5s ease-out;
+    }
+
+    @keyframes marker-pulse-ring {
+      0% {
+        box-shadow: 0 0 0 0 rgba(52, 152, 219, 0.7);
+      }
+      50% {
+        box-shadow: 0 0 0 10px rgba(52, 152, 219, 0.3);
+      }
+      100% {
+        box-shadow: 0 0 0 20px rgba(52, 152, 219, 0);
+      }
+    }
+
     .airport-id {
       font-family: var(--font-mono);
       font-weight: 700;
@@ -651,6 +685,40 @@
 
       <!-- Leaflet map -->
       <div id="map"></div>
+      <div style="margin-top: 8px; font-size: 11px; display: flex; flex-wrap: wrap; gap: 12px;">
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #2c3e50; border: 1px solid #fff;"></span>
+          Large
+        </span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #3498db; border: 1px solid #fff;"></span>
+          Medium
+        </span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #95a5a6; border: 1px solid #fff;"></span>
+          Small
+        </span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #e74c3c; border: 1px solid #fff;"></span>
+          Heliport
+        </span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #16a085; border: 1px solid #fff;"></span>
+          Seaplane
+        </span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #f39c12; border: 1px solid #fff;"></span>
+          Balloon
+        </span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #7f8c8d; border: 1px solid #fff;"></span>
+          Closed
+        </span>
+        <span style="display: flex; align-items: center; gap: 4px;">
+          <span style="width: 12px; height: 12px; border-radius: 50%; background: #00bcd4; border: 1px solid #fff;"></span>
+          Other
+        </span>
+      </div>
 
       <br />
 
@@ -876,6 +944,7 @@
             hasManualEdits = true;
             renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
             updateTextareaFromFilteredAirports();
+            updateAirportMarkers();
           }
         });
 
@@ -904,6 +973,14 @@
         cell.addEventListener("dragend", handleDragEnd);
         cell.addEventListener("dragenter", handleDragEnter);
         cell.addEventListener("dragleave", handleDragLeave);
+
+        // Click handler to pulse marker on map
+        cell.addEventListener("click", (e) => {
+          // Don't trigger if clicking the remove button
+          if (!e.target.classList.contains('airport-remove')) {
+            pulseMarkerOnMap(ap.id);
+          }
+        });
 
         container.appendChild(cell);
       });
@@ -980,6 +1057,7 @@
           hasManualEdits = true;
           renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
           updateTextareaFromFilteredAirports();
+          updateAirportMarkers();
         }
       }
 
@@ -1020,6 +1098,114 @@
 
       cancelBtn.addEventListener("click", onCancel);
       confirmBtn.addEventListener("click", onConfirmClick);
+    }
+
+    function getAirportColor(type) {
+      const colors = {
+        'large_airport': '#2c3e50',    // Dark blue
+        'medium_airport': '#3498db',   // Light blue
+        'small_airport': '#95a5a6',    // Gray
+        'heliport': '#e74c3c',         // Red
+        'seaplane_base': '#16a085',    // Teal
+        'balloonport': '#f39c12',      // Orange
+        'closed': '#7f8c8d'            // Dark gray
+      };
+      return colors[type] || '#00bcd4'; // Default cyan for other/unknown types
+    }
+
+    function updateAirportMarkers() {
+      if (!mapInstance) return;
+
+      // Clear existing airport markers
+      airportMarkers.forEach(marker => mapInstance.removeLayer(marker));
+      airportMarkers = [];
+
+      // Get filtered airports (respects type filters)
+      const visibleAirports = getFilteredAirports(currentAirports);
+
+      // Add markers for airports with valid coordinates
+      visibleAirports.forEach(airport => {
+        if (typeof airport.lat === 'number' && typeof airport.lon === 'number') {
+          const color = getAirportColor(airport.type);
+
+          const marker = L.circleMarker([airport.lat, airport.lon], {
+            radius: 6,
+            fillColor: color,
+            color: '#fff',
+            weight: 1,
+            opacity: 1,
+            fillOpacity: 0.8
+          });
+
+          // Store airport ID on marker for later lookup
+          marker.airportId = airport.id;
+
+          marker.bindPopup(`
+            <strong>${airport.id}</strong><br>
+            ${airport.name}<br>
+            ${airport.type.replace('_', ' ')}<br>
+            ${airport.altitude_ft ?? 'Unknown'} ft
+          `);
+
+          // Add click handler to highlight in grid
+          marker.on('click', () => {
+            highlightAirportInGrid(airport.id);
+          });
+
+          marker.addTo(mapInstance);
+          airportMarkers.push(marker);
+        }
+      });
+    }
+
+    function highlightAirportInGrid(airportId) {
+      // Find the airport cell in the grid
+      const cells = document.querySelectorAll('.airport-cell');
+
+      cells.forEach(cell => {
+        // Remove previous highlights
+        cell.classList.remove('highlighted');
+
+        // Check if this is the target airport
+        if (cell.dataset.airportId === airportId) {
+          // Add highlight class
+          cell.classList.add('highlighted');
+
+          // Scroll into view
+          cell.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+          // Remove highlight after 2 seconds
+          setTimeout(() => {
+            cell.classList.remove('highlighted');
+          }, 2000);
+        }
+      });
+    }
+
+    function pulseMarkerOnMap(airportId) {
+      if (!mapInstance) return;
+
+      // Find the marker with this airport ID
+      const marker = airportMarkers.find(m => m.airportId === airportId);
+
+      if (marker) {
+        // Open the popup
+        marker.openPopup();
+
+        // Pan map to center on the marker
+        mapInstance.panTo(marker.getLatLng());
+
+        // Get the marker's DOM element and add pulsing animation
+        const markerElement = marker._path;
+        if (markerElement) {
+          markerElement.classList.add('marker-pulse');
+
+          // Remove the class after animation completes
+          setTimeout(() => {
+            markerElement.classList.remove('marker-pulse');
+          }, 1500);
+        }
+      }
     }
 
     function haversineKm(lat1, lon1, lat2, lon2) {
@@ -1091,6 +1277,7 @@
     let mapInstance = null;
     let mapMarker = null;
     let mapCircle = null;
+    let airportMarkers = [];  // Store airport markers
 
     function initMap() {
       const defaultLat = 50.0;
@@ -1193,6 +1380,7 @@ async function loadAirportDb() {
 
     updateTextareaFromFilteredAirports();
     renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+    updateAirportMarkers();
   } catch (e) {
     console.error("Failed to load OurAirports CSV, using fallback DB.", e);
   }
@@ -1211,6 +1399,7 @@ async function loadAirportDb() {
       const searchBtn  = document.getElementById("search-place");
 
       updateTextareaFromFilteredAirports();
+      updateAirportMarkers();
 
       function applyConfigFromTextarea() {
         if (!textarea) return;
@@ -1235,6 +1424,7 @@ async function loadAirportDb() {
           hasManualEdits = true;
           renderAirportsGrid(getFilteredAirports(currentAirports), cols);
           updateTextareaFromFilteredAirports();
+          updateAirportMarkers();
         } catch (e) {
           console.error(e);
           errorEl.textContent = "Invalid JSON: " + e.message;
@@ -1272,6 +1462,7 @@ async function loadAirportDb() {
           if (!Number.isFinite(cols) || cols < 1) cols = 10;
           renderAirportsGrid(getFilteredAirports(currentAirports), cols);
           updateTextareaFromFilteredAirports();
+          updateAirportMarkers();
         }
 
         // Check for manual edits before proceeding
@@ -1308,6 +1499,7 @@ async function loadAirportDb() {
           else enabledTypes.delete(cb.value);
           renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
           updateTextareaFromFilteredAirports();
+          updateAirportMarkers();
         });
       });
 
