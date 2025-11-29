@@ -1,0 +1,1084 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Pilot Reference Poster</title>
+  <!-- Aviation-ish fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Roboto+Mono:wght@400;600&display=swap" rel="stylesheet" />
+  <!-- Leaflet CSS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+    crossorigin=""
+  />
+  <style>
+    :root {
+      --page-width: 1200px;
+      --text-main: #111111;
+      --accent: #222222;
+      --font-main: "Rajdhani", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      --font-mono: "Roboto Mono", Menlo, Monaco, Consolas, "Courier New", monospace;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 32px;
+      background: #ffffff;
+      font-family: var(--font-main);
+      color: var(--text-main);
+      display: flex;
+      justify-content: center;
+    }
+
+    .page {
+      width: var(--page-width);
+      background: #ffffff;
+      padding: 24px 16px 32px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 24px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 32px;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    header p {
+      margin: 6px 0 0;
+      font-size: 12px;
+      color: #555555;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .section {
+      margin-bottom: 28px;
+    }
+
+    .block-title {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--accent);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .block-title .icon svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+
+    .two-column {
+      display: grid;
+      grid-template-columns: 1.4fr 1fr;
+      gap: 32px;
+      align-items: flex-start;
+    }
+
+    /* NATO grid */
+    .nato-grid {
+      display: grid;
+      grid-template-columns: repeat(6, 1fr);
+      gap: 8px;
+      margin-top: 4px;
+    }
+
+    .nato-cell {
+      border-radius: 6px;
+      padding: 6px 4px;
+      text-align: center;
+      background: #f7f7f7;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 72px;
+    }
+
+    .nato-letter {
+      font-family: var(--font-mono);
+      font-size: 22px;
+      font-weight: 700;
+      margin-bottom: 2px;
+    }
+
+    .nato-word {
+      font-size: 13px;
+      font-weight: 600;
+      margin-bottom: 1px;
+    }
+
+    .nato-morse {
+      font-family: var(--font-mono);
+      font-size: 11px;
+      letter-spacing: 0.12em;
+      color: #444444;
+    }
+
+    .inline-label {
+      font-family: var(--font-mono);
+      font-weight: 600;
+      padding: 1px 4px;
+      border-radius: 3px;
+      background: #f0f0f0;
+      margin-right: 4px;
+      font-size: 11px;
+    }
+
+    .small-text {
+      font-size: 12px;
+      color: #444444;
+      margin-top: 2px;
+      margin-bottom: 8px;
+    }
+
+    /* Tables */
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      font-size: 12px;
+      margin-top: 6px;
+    }
+
+    th,
+    td {
+      padding: 3px 4px;
+      text-align: left;
+      border-bottom: 1px solid #dddddd;
+      font-weight: 400;
+    }
+
+    th {
+      font-weight: 600;
+    }
+
+    /* Airports grid */
+    .airports-grid-title {
+      margin: 0 0 6px;
+      font-size: 18px;
+      color: var(--accent);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .airports-grid-title .icon svg {
+      width: 18px;
+      height: 18px;
+      stroke-width: 1.8;
+    }
+
+    .airports-grid {
+      display: grid;
+      gap: 6px;
+      font-size: 11px;
+      width: 100%;
+    }
+
+    .airport-cell {
+      border-radius: 6px;
+      padding: 6px 4px;
+      text-align: center;
+      background: #f7f7f7;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      min-height: 56px;
+      min-width: 0; /* allow shrink in CSS grid */
+    }
+
+    .airport-id {
+      font-family: var(--font-mono);
+      font-weight: 700;
+      font-size: 12px;
+      margin-bottom: 1px;
+    }
+
+    .airport-name {
+      display: block;
+      width: 100%;
+      max-width: 100%;
+      font-size: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 1px;
+      color: #444444;
+    }
+
+    .airport-alt {
+      font-family: var(--font-mono);
+      font-size: 10px;
+      color: #555555;
+    }
+
+    footer {
+      margin-top: 20px;
+      text-align: right;
+      font-size: 10px;
+      color: #777777;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    footer a {
+      color: inherit;
+      text-decoration: underline;
+    }
+
+    /* Config section (below poster, hidden when printing) */
+    .config-section {
+      margin-top: 32px;
+      border-top: 1px solid #dddddd;
+      padding-top: 14px;
+      font-size: 12px;
+      color: #333333;
+    }
+
+    .config-title {
+      margin: 0 0 4px;
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .config-title .icon svg {
+      width: 16px;
+      height: 16px;
+      stroke-width: 1.8;
+    }
+
+    .config-hint {
+      margin: 0 0 4px;
+      font-size: 11px;
+      color: #666666;
+    }
+
+    .config-controls {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 6px;
+      font-size: 11px;
+    }
+
+    .config-controls label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .config-controls input[type="number"],
+    .config-controls input[type="text"] {
+      width: 80px;
+      padding: 2px 4px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      border-radius: 4px;
+      border: 1px solid #cccccc;
+    }
+
+    .config-controls input#place-query {
+      width: 180px;
+    }
+
+    .config-example {
+      font-size: 11px;
+      margin: 0 0 4px;
+      font-family: var(--font-mono);
+      color: #777777;
+    }
+
+    #airport-config {
+      width: 100%;
+      height: 140px;
+      border-radius: 4px;
+      border: 1px solid #cccccc;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      padding: 6px;
+      resize: vertical;
+      background: #fafafa;
+    }
+
+    .actions {
+      text-align: right;
+      margin-top: 6px;
+    }
+
+    .actions button,
+    .config-controls button {
+      border-radius: 999px;
+      border: 1px solid #333333;
+      padding: 5px 14px;
+      font-size: 11px;
+      cursor: pointer;
+      background: #ffffff;
+      color: #111111;
+      font-family: var(--font-main);
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      transition: background 0.15s ease, color 0.15s ease, transform 0.05s ease, box-shadow 0.15s ease;
+    }
+
+    .actions button:hover,
+    .config-controls button:hover {
+      background: #111111;
+      color: #ffffff;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
+    }
+
+    .actions button:active,
+    .config-controls button:active {
+      transform: translateY(1px);
+      box-shadow: none;
+    }
+
+    #config-error {
+      margin-top: 4px;
+      font-size: 11px;
+      color: #c0392b;
+      min-height: 14px;
+    }
+
+    /* Nominatim search results */
+    #search-results {
+      margin-top: 6px;
+      font-size: 11px;
+      max-height: 120px;
+      overflow-y: auto;
+      border-radius: 4px;
+      border: 1px solid #dddddd;
+      padding: 4px;
+      background: #fafafa;
+    }
+
+    #search-results div {
+      padding: 2px 4px;
+      cursor: pointer;
+    }
+
+    #search-results div:hover {
+      background: #e0e0e0;
+    }
+
+    #search-results .empty {
+      color: #777777;
+      font-style: italic;
+    }
+
+    /* Leaflet map container (only in config, hidden on print) */
+    #map {
+      margin-top: 10px;
+      height: 300px;
+      border-radius: 4px;
+      border: 1px solid #dddddd;
+    }
+
+    @media print {
+      body {
+        padding: 0;
+      }
+      .page {
+        padding: 16px 24px 24px;
+      }
+      .config-section {
+        display: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <header>
+      <h1>PILOT REFERENCE</h1>
+      <p>NATO ALPHABET · METAR/TAF · VFR CATEGORIES · EMERGENCY FREQS · AIRPORTS/NAVAIDS</p>
+    </header>
+
+    <!-- NATO + METAR/TAF/Emergency/VFR -->
+    <div class="two-column section">
+      <!-- NATO -->
+      <div id="section-nato">
+        <h2 class="block-title">
+          <span class="icon" data-lucide="type"></span>
+          NATO Alphabet &amp; Morse
+        </h2>
+        <div id="nato-grid" class="nato-grid"></div>
+      </div>
+
+      <!-- METAR / TAF / Emergency / VFR Categories -->
+      <div>
+        <div id="section-metar">
+          <h2 class="block-title">
+            <span class="icon" data-lucide="cloud-sun"></span>
+            METAR / TAF
+          </h2>
+          <p class="small-text">
+            <span class="inline-label">METAR</span>current&nbsp;&nbsp;&nbsp;
+            <span class="inline-label">TAF</span>forecast
+          </p>
+          <table>
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Meaning</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>CAVOK</td>
+                <td>Ceiling and visibility OK</td>
+              </tr>
+              <tr>
+                <td>FEW</td>
+                <td>Few clouds</td>
+              </tr>
+              <tr>
+                <td>SCT</td>
+                <td>Scattered clouds</td>
+              </tr>
+              <tr>
+                <td>BKN</td>
+                <td>Broken clouds</td>
+              </tr>
+              <tr>
+                <td>OVC</td>
+                <td>Overcast clouds</td>
+              </tr>
+              <tr>
+                <td>RA / SN</td>
+                <td>Rain / Snow</td>
+              </tr>
+              <tr>
+                <td>BR / FG</td>
+                <td>Mist / Fog</td>
+              </tr>
+              <tr>
+                <td>TEMPO</td>
+                <td>Temporary change</td>
+              </tr>
+              <tr>
+                <td>BECMG</td>
+                <td>Becoming / gradual change</td>
+              </tr>
+              <tr>
+                <td>VRB</td>
+                <td>Variable wind</td>
+              </tr>
+              <tr>
+                <td>QNH</td>
+                <td>Altimeter setting (hPa)</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="section-emergency">
+          <h2 class="block-title" style="margin-top: 16px; font-size:16px;">
+            <span class="icon" data-lucide="radio"></span>
+            Emergency
+          </h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Freq</th>
+                <th>Use</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>121.500 MHz</td>
+                <td>Civil guard</td>
+              </tr>
+              <tr>
+                <td>243.000 MHz</td>
+                <td>Military guard</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div id="section-vfr">
+          <h2 class="block-title" style="margin-top: 16px; font-size:16px;">
+            <span class="icon" data-lucide="layers"></span>
+            Flight Categories
+          </h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Cat</th>
+                <th>Ceiling</th>
+                <th>Visibility</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td>VFR</td>
+                <td>≥ 3000 ft</td>
+                <td>≥ 5 SM</td>
+              </tr>
+              <tr>
+                <td>MVFR</td>
+                <td>1000–2999 ft</td>
+                <td>3–5 SM</td>
+              </tr>
+              <tr>
+                <td>IFR</td>
+                <td>500–999 ft</td>
+                <td>1–&lt;3 SM</td>
+              </tr>
+              <tr>
+                <td>LIFR</td>
+                <td>&lt; 500 ft</td>
+                <td>&lt; 1 SM</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+
+    <!-- Airports / Navaids grid -->
+    <div class="section" id="section-airports">
+      <h2 class="airports-grid-title">
+        <span class="icon" data-lucide="map-pin"></span>
+        Airports / Navaids
+      </h2>
+      <div id="airports-grid" class="airports-grid"></div>
+    </div>
+
+    <footer>
+      Training aide · Use official charts &amp; regulations for real operations<br />
+      <span style="font-size:9px;">Airport data from <a href="https://ourairports.com/" target="_blank" rel="noopener noreferrer">OurAirports.com</a></span>
+    </footer>
+
+    <!-- Config section (not part of printed poster) -->
+    <div class="config-section">
+      <h3 class="config-title">
+        <span class="icon" data-lucide="settings-2"></span>
+        Airport / Navaid Configuration (JSON)
+      </h3>
+      <p class="config-hint">
+        Airports are loaded from <code>https://ourairports.com/airports.csv</code> (with a small built-in fallback).
+        Adjust center, radius, types, and category visibility below. Too many entries will make cells very small.
+      </p>
+
+      <!-- Leaflet map -->
+      <div id="map"></div>
+
+      <div class="config-controls">
+        <label>
+          Columns:
+          <input type="number" id="airport-cols" min="3" max="20" value="10" />
+        </label>
+        <label>
+          Center lat:
+          <input type="number" id="center-lat" step="0.0001" value="50.0" />
+        </label>
+        <label>
+          Center lon:
+          <input type="number" id="center-lon" step="0.0001" value="8.0" />
+        </label>
+        <label>
+          Radius (km):
+          <input type="number" id="radius-km" min="10" max="2000" value="75" />
+        </label>
+        <button id="find-nearby">Find nearby</button>
+      </div>
+
+      <div class="config-controls">
+        <label>
+          Search place (Nominatim):
+          <input type="text" id="place-query" placeholder="e.g. Berlin, Frankfurt, EDDM" />
+        </label>
+        <button id="search-place">Search</button>
+      </div>
+
+      <div class="config-controls">
+        <span>Airport types:</span>
+        <label><input type="checkbox" class="type-filter" value="large_airport" checked /> large</label>
+        <label><input type="checkbox" class="type-filter" value="medium_airport" checked /> medium</label>
+        <label><input type="checkbox" class="type-filter" value="small_airport" checked /> small</label>
+        <label><input type="checkbox" class="type-filter" value="heliport" /> heliport</label>
+        <label><input type="checkbox" class="type-filter" value="seaplane_base" /> seaplane</label>
+        <label><input type="checkbox" class="type-filter" value="balloonport" /> balloon</label>
+        <label><input type="checkbox" class="type-filter" value="closed" /> closed</label>
+      </div>
+
+      <div class="config-controls">
+        <span>Show sections:</span>
+        <label><input type="checkbox" class="category-filter" data-target="section-nato" checked /> NATO</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-metar" checked /> METAR/TAF</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-emergency" checked /> Emergency</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-vfr" checked /> VFR</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-airports" checked /> Airports</label>
+      </div>
+
+      <div id="search-results">
+        <div class="empty">No search yet. Results will appear here.</div>
+      </div>
+
+      <pre class="config-example">
+[
+  {"id": "EDDF", "name": "Frankfurt/Main", "altitude_ft": 364},
+  ...
+]
+      </pre>
+      <textarea id="airport-config"></textarea>
+      <div class="actions">
+        <button id="apply-airports">Apply</button>
+      </div>
+      <div id="config-error"></div>
+    </div>
+  </div>
+
+  <!-- Lucide icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- Leaflet JS -->
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin=""></script>
+  <!-- PapaParse for CSV parsing -->
+  <script src="https://unpkg.com/papaparse@5.4.1/papaparse.min.js"></script>
+
+  <script>
+    const AIRPORT_TYPES = [
+      "balloonport",
+      "closed",
+      "heliport",
+      "large_airport",
+      "medium_airport",
+      "small_airport",
+      "seaplane_base"
+    ];
+
+    let enabledTypes = new Set(AIRPORT_TYPES);
+
+    // Small fallback DB
+    const FALLBACK_AIRPORT_DB = [
+      { id: "EDDF", name: "Frankfurt/Main",      type: "large_airport",  altitude_ft: 364,  lat: 50.0333, lon: 8.5706 },
+      { id: "EDDM", name: "Munich",              type: "large_airport",  altitude_ft: 1487, lat: 48.3538, lon: 11.7861 }
+    ];
+
+    let airportDb = FALLBACK_AIRPORT_DB;
+    let currentAirports = airportDb.slice(0, 20);
+
+    const NATO_ALPHABET = [
+      { letter: "A", word: "Alfa",     morse: ".-"   },
+      { letter: "B", word: "Bravo",    morse: "-..." },
+      { letter: "C", word: "Charlie",  morse: "-.-." },
+      { letter: "D", word: "Delta",    morse: "-.."  },
+      { letter: "E", word: "Echo",     morse: "."    },
+      { letter: "F", word: "Foxtrot",  morse: "..-." },
+      { letter: "G", word: "Golf",     morse: "--."  },
+      { letter: "H", word: "Hotel",    morse: "...." },
+      { letter: "I", word: "India",    morse: ".."   },
+      { letter: "J", word: "Juliett",  morse: ".---" },
+      { letter: "K", word: "Kilo",     morse: "-.-"  },
+      { letter: "L", word: "Lima",     morse: ".-.." },
+      { letter: "M", word: "Mike",     morse: "--"   },
+      { letter: "N", word: "November", morse: "-."   },
+      { letter: "O", word: "Oscar",    morse: "---"  },
+      { letter: "P", word: "Papa",     morse: ".--"  },
+      { letter: "Q", word: "Quebec",   morse: "--.-" },
+      { letter: "R", word: "Romeo",    morse: ".-."  },
+      { letter: "S", word: "Sierra",   morse: "..."  },
+      { letter: "T", word: "Tango",    morse: "-"    },
+      { letter: "U", word: "Uniform",  morse: "..-"  },
+      { letter: "V", word: "Victor",   morse: "...-" },
+      { letter: "W", word: "Whiskey",  morse: ".--"  },
+      { letter: "X", word: "X-ray",    morse: "-..-" },
+      { letter: "Y", word: "Yankee",   morse: "-.--" },
+      { letter: "Z", word: "Zulu",     morse: "--.." },
+    ];
+
+    function renderNatoGrid() {
+      const container = document.getElementById("nato-grid");
+      container.innerHTML = "";
+      NATO_ALPHABET.forEach(entry => {
+        const cell = document.createElement("div");
+        cell.className = "nato-cell";
+
+        const letter = document.createElement("div");
+        letter.className = "nato-letter";
+        letter.textContent = entry.letter;
+
+        const word = document.createElement("div");
+        word.className = "nato-word";
+        word.textContent = entry.word;
+
+        const morse = document.createElement("div");
+        morse.className = "nato-morse";
+        morse.textContent = entry.morse;
+
+        cell.appendChild(letter);
+        cell.appendChild(word);
+        cell.appendChild(morse);
+        container.appendChild(cell);
+      });
+    }
+
+    function getCurrentCols() {
+      const colsInput = document.getElementById("airport-cols");
+      if (!colsInput) return 10;
+      const cols = parseInt(colsInput.value, 10);
+      return Number.isFinite(cols) && cols > 0 ? cols : 10;
+    }
+
+    function getFilteredAirports(base) {
+      return base.filter(ap => {
+        const t = ap.type || "";
+        if (!t) return true;
+        if (!AIRPORT_TYPES.includes(t)) return true;
+        return enabledTypes.has(t);
+      });
+    }
+
+    function renderAirportsGrid(airports, cols) {
+      const container = document.getElementById("airports-grid");
+      container.innerHTML = "";
+
+      const validCols = Number.isFinite(cols) && cols > 0 ? cols : 10;
+      container.style.gridTemplateColumns = `repeat(${validCols}, minmax(0, 1fr))`;
+
+      airports.forEach(ap => {
+        const cell = document.createElement("div");
+        cell.className = "airport-cell";
+
+        const idEl = document.createElement("div");
+        idEl.className = "airport-id";
+        idEl.textContent = ap.id || "XXX";
+
+        const nameEl = document.createElement("div");
+        nameEl.className = "airport-name";
+        const full = ap.name || "Unknown";
+        nameEl.textContent = full; // CSS handles ellipsis
+
+        const altEl = document.createElement("div");
+        altEl.className = "airport-alt";
+        altEl.textContent = (ap.altitude_ft ?? "UNKNOWN") + " ft";
+
+        cell.appendChild(idEl);
+        cell.appendChild(nameEl);
+        cell.appendChild(altEl);
+
+        container.appendChild(cell);
+      });
+    }
+
+    function haversineKm(lat1, lon1, lat2, lon2) {
+      const R = 6371;
+      const toRad = deg => deg * Math.PI / 180;
+      const dLat = toRad(lat2 - lat1);
+      const dLon = toRad(lon2 - lon1);
+      const a =
+        Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+        Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+        Math.sin(dLon / 2) * Math.sin(dLon / 2);
+      const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+      return R * c;
+    }
+
+    function findAirportsInRadius(centerLat, centerLon, radiusKm, db) {
+      return db
+        .filter(ap => typeof ap.lat === "number" && typeof ap.lon === "number")
+        .filter(ap => haversineKm(centerLat, centerLon, ap.lat, ap.lon) <= radiusKm)
+        .sort((a, b) => {
+          const da = haversineKm(centerLat, centerLon, a.lat, a.lon);
+          const dbb = haversineKm(centerLat, centerLon, b.lat, b.lon);
+          return da - dbb;
+        });
+    }
+
+    async function searchPlaceNominatim(query) {
+      const url = new URL("https://nominatim.openstreetmap.org/search");
+      url.searchParams.set("q", query);
+      url.searchParams.set("format", "jsonv2");
+      url.searchParams.set("limit", "5");
+      url.searchParams.set("email", "YOUR_EMAIL@example.com"); // optional contact
+
+      const res = await fetch(url.toString(), {
+        headers: { "Accept": "application/json" }
+      });
+      if (!res.ok) throw new Error("Nominatim error: " + res.status);
+      return res.json();
+    }
+
+    function renderSearchResults(results) {
+      const container = document.getElementById("search-results");
+      container.innerHTML = "";
+
+      if (!results || results.length === 0) {
+        const div = document.createElement("div");
+        div.className = "empty";
+        div.textContent = "No results.";
+        container.appendChild(div);
+        return;
+      }
+
+      results.forEach(item => {
+        const div = document.createElement("div");
+        div.textContent = `${item.display_name} (lat ${item.lat}, lon ${item.lon})`;
+        div.addEventListener("click", () => {
+          const lat = Number(item.lat);
+          const lon = Number(item.lon);
+          const latInput = document.getElementById("center-lat");
+          const lonInput = document.getElementById("center-lon");
+          latInput.value = lat.toFixed(4);
+          lonInput.value = lon.toFixed(4);
+          updateMapCenter(lat, lon);
+        });
+        container.appendChild(div);
+      });
+    }
+
+    let mapInstance = null;
+    let mapMarker = null;
+    let mapCircle = null;
+
+    function initMap() {
+      const defaultLat = 50.0;
+      const defaultLon = 8.0;
+      const defaultZoom = 5;
+
+      mapInstance = L.map("map").setView([defaultLat, defaultLon], defaultZoom);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        maxZoom: 18,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(mapInstance);
+
+      mapMarker = L.marker([defaultLat, defaultLon]).addTo(mapInstance);
+      const radiusKmInput = document.getElementById("radius-km");
+      const radiusKm = parseFloat(radiusKmInput.value) || 75;
+      mapCircle = L.circle([defaultLat, defaultLon], {
+        radius: radiusKm * 1000,
+        color: "#555",
+        fillColor: "#aaa",
+        fillOpacity: 0.1
+      }).addTo(mapInstance);
+
+      mapInstance.on("click", (e) => {
+        const lat = e.latlng.lat;
+        const lon = e.latlng.lng;
+        const latInput = document.getElementById("center-lat");
+        const lonInput = document.getElementById("center-lon");
+        latInput.value = lat.toFixed(4);
+        lonInput.value = lon.toFixed(4);
+        updateMapCenter(lat, lon, false);
+      });
+    }
+
+    function updateMapCenter(lat, lon, pan = true) {
+      if (!mapInstance || !mapMarker || !mapCircle) return;
+      if (pan) mapInstance.setView([lat, lon]);
+      mapMarker.setLatLng([lat, lon]);
+      mapCircle.setLatLng([lat, lon]);
+    }
+
+    function updateMapRadiusFromInput() {
+      if (!mapCircle) return;
+      const radiusKmInput = document.getElementById("radius-km");
+      const radiusKm = parseFloat(radiusKmInput.value);
+      if (!Number.isFinite(radiusKm) || radiusKm <= 0) return;
+      mapCircle.setRadius(radiusKm * 1000);
+    }
+async function loadAirportDb() {
+  try {
+    const res = await fetch("https://ourairports.com/airports.csv");
+    if (!res.ok) throw new Error("HTTP " + res.status);
+
+    const csvText = await res.text();
+    const parsed = Papa.parse(csvText, {
+      header: true,
+      dynamicTyping: false, // <-- keep everything as strings
+      skipEmptyLines: true
+    });
+
+    const rows = parsed.data;
+    const airports = [];
+
+    rows.forEach(row => {
+      // Always cast to string before trim
+      const icao  = ((row.icao_code  ?? "") + "").trim();
+      const gps   = ((row.gps_code   ?? "") + "").trim();
+      const ident = ((row.ident      ?? "") + "").trim();
+
+      const id = icao || gps || ident;
+      if (!id) return;
+
+      const latStr = (row.latitude_deg  ?? "").toString();
+      const lonStr = (row.longitude_deg ?? "").toString();
+      const altStr = (row.elevation_ft  ?? "").toString();
+
+      const lat = latStr !== "" ? Number(latStr) : null;
+      const lon = lonStr !== "" ? Number(lonStr) : null;
+      const alt = altStr !== "" ? Number(altStr) : null;
+
+      airports.push({
+        id,
+        name: ((row.name ?? "") + "").trim(),
+        type: ((row.type ?? "") + "").trim(),
+        altitude_ft: alt,
+        lat,
+        lon
+      });
+    });
+
+    // Replace DB with real OurAirports data
+    airportDb = airports;
+
+    const centerLat = parseFloat(document.getElementById("center-lat").value) || 50.0;
+    const centerLon = parseFloat(document.getElementById("center-lon").value) || 8.0;
+    const radiusKm  = parseFloat(document.getElementById("radius-km").value)  || 75;
+
+    const nearby = findAirportsInRadius(centerLat, centerLon, radiusKm, airportDb).slice(0, 75);
+    currentAirports = nearby.length ? nearby : airportDb.slice(0, 75);
+
+    const textarea = document.getElementById("airport-config");
+    if (textarea) {
+      textarea.value = JSON.stringify(currentAirports, null, 2);
+    }
+
+    renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+  } catch (e) {
+    console.error("Failed to load OurAirports CSV, using fallback DB.", e);
+  }
+}
+
+    function initAirportConfig() {
+      const textarea   = document.getElementById("airport-config");
+      const errorEl    = document.getElementById("config-error");
+      const applyBtn   = document.getElementById("apply-airports");
+      const colsInput  = document.getElementById("airport-cols");
+      const findNearby = document.getElementById("find-nearby");
+      const centerLat  = document.getElementById("center-lat");
+      const centerLon  = document.getElementById("center-lon");
+      const radiusKm   = document.getElementById("radius-km");
+      const placeQuery = document.getElementById("place-query");
+      const searchBtn  = document.getElementById("search-place");
+
+      if (textarea) {
+        textarea.value = JSON.stringify(currentAirports, null, 2);
+      }
+
+      function applyConfigFromTextarea() {
+        if (!textarea) return;
+        errorEl.textContent = "";
+        let cols = parseInt(colsInput.value, 10);
+        if (!Number.isFinite(cols) || cols < 1) cols = 10;
+
+        try {
+          const parsed = JSON.parse(textarea.value);
+          if (!Array.isArray(parsed)) throw new Error("JSON root must be an array.");
+          currentAirports = parsed;
+          renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+        } catch (e) {
+          console.error(e);
+          errorEl.textContent = "Invalid JSON: " + e.message;
+        }
+      }
+
+      applyBtn.addEventListener("click", applyConfigFromTextarea);
+
+      findNearby.addEventListener("click", () => {
+        errorEl.textContent = "";
+
+        const lat = parseFloat(centerLat.value);
+        const lon = parseFloat(centerLon.value);
+        const r   = parseFloat(radiusKm.value);
+
+        if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(r) || r <= 0) {
+          errorEl.textContent = "Invalid center or radius.";
+          return;
+        }
+
+        const nearby = findAirportsInRadius(lat, lon, r, airportDb);
+        if (nearby.length === 0) {
+          errorEl.textContent = "No airports in range (DB may be limited).";
+        }
+
+        currentAirports = nearby;
+        if (textarea) {
+          textarea.value = JSON.stringify(nearby, null, 2);
+        }
+
+        let cols = parseInt(colsInput.value, 10);
+        if (!Number.isFinite(cols) || cols < 1) cols = 10;
+        renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+      });
+
+      searchBtn.addEventListener("click", async () => {
+        const q = placeQuery.value.trim();
+        const resultsDiv = document.getElementById("search-results");
+        errorEl.textContent = "";
+        if (!q) {
+          resultsDiv.innerHTML = '<div class="empty">Please enter a place.</div>';
+          return;
+        }
+        resultsDiv.innerHTML = '<div class="empty">Searching…</div>';
+        try {
+          const results = await searchPlaceNominatim(q);
+          renderSearchResults(results);
+        } catch (e) {
+          console.error(e);
+          resultsDiv.innerHTML = '<div class="empty">Search failed.</div>';
+        }
+      });
+
+      radiusKm.addEventListener("input", updateMapRadiusFromInput);
+
+      document.querySelectorAll(".type-filter").forEach(cb => {
+        cb.addEventListener("change", () => {
+          if (cb.checked) enabledTypes.add(cb.value);
+          else enabledTypes.delete(cb.value);
+          renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+        });
+      });
+
+      document.querySelectorAll(".category-filter").forEach(cb => {
+        cb.addEventListener("change", () => {
+          const targetId = cb.dataset.target;
+          const el = document.getElementById(targetId);
+          if (!el) return;
+          el.style.display = cb.checked ? "" : "none";
+        });
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      renderNatoGrid();
+      renderAirportsGrid(getFilteredAirports(currentAirports), 10);
+      initAirportConfig();
+      initMap();
+      loadAirportDb();
+
+      if (window.lucide && window.lucide.createIcons) {
+        window.lucide.createIcons();
+      }
+    });
+  </script>
+</body>
+</html>
