@@ -733,6 +733,10 @@
         <label><input type="checkbox" class="category-filter" data-target="section-emergency" checked /> Emergency</label>
         <label><input type="checkbox" class="category-filter" data-target="section-vfr" checked /> VFR</label>
         <label><input type="checkbox" class="category-filter" data-target="section-airports" checked /> Airports</label>
+        <label>
+          Columns:
+          <input type="number" id="airport-cols" min="3" max="20" value="10" />
+        </label>
       </div>
 
       <br />
@@ -790,10 +794,6 @@
 
       <div class="config-controls">
         <label>
-          Columns:
-          <input type="number" id="airport-cols" min="3" max="20" value="10" />
-        </label>
-        <label>
           Center lat:
           <input type="number" id="center-lat" step="0.0001" value="50.0" />
         </label>
@@ -816,7 +816,12 @@
         </label>
         <button id="search-place">Search</button>
       </div>
+      <div id="search-results">
+        <div class="empty">No search yet. Results will appear here.</div>
+      </div>
 
+      <br />
+      
       <div class="config-controls">
         <span>Airport types:</span>
         <label><input type="checkbox" class="type-filter" value="large_airport" checked /> large</label>
@@ -828,9 +833,6 @@
         <label><input type="checkbox" class="type-filter" value="closed" /> closed</label>
       </div>
 
-      <div id="search-results">
-        <div class="empty">No search yet. Results will appear here.</div>
-      </div>
       <br />
       <textarea id="airport-config"></textarea>
       <div class="actions">
