@@ -355,6 +355,69 @@
       color: #666666;
     }
 
+    .info-icon-wrapper {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      margin-left: 6px;
+      cursor: help;
+    }
+
+    .info-icon-wrapper .icon svg {
+      width: 14px;
+      height: 14px;
+      stroke-width: 2;
+      color: #999;
+      transition: color 0.2s;
+    }
+
+    .info-icon-wrapper:hover .icon svg {
+      color: var(--accent);
+    }
+
+    .info-tooltip {
+      position: absolute;
+      bottom: calc(100% + 8px);
+      left: 50%;
+      transform: translateX(-50%);
+      background: #333;
+      color: white;
+      padding: 8px 12px;
+      border-radius: 6px;
+      font-size: 11px;
+      line-height: 1.4;
+      white-space: normal;
+      width: 280px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.2s;
+      z-index: 1000;
+      font-weight: normal;
+      text-transform: none;
+      letter-spacing: normal;
+    }
+
+    .info-tooltip::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 6px solid transparent;
+      border-top-color: #333;
+    }
+
+    .info-icon-wrapper:hover .info-tooltip {
+      opacity: 1;
+    }
+
+    .info-tooltip code {
+      background: rgba(255, 255, 255, 0.2);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-size: 10px;
+    }
+
     .config-controls {
       display: flex;
       flex-wrap: wrap;
@@ -676,12 +739,15 @@
 
       <h3 class="config-title">
         <span class="icon" data-lucide="settings-2"></span>
-        Airport / Navaid Configuration (JSON)
+        Airport / Navaid Configuration
+        <span class="info-icon-wrapper">
+          <span class="icon" data-lucide="info"></span>
+          <span class="info-tooltip">
+            Airports are loaded from <code>OurAirports.com</code> (updated weekly).
+            Adjust center, radius, types, and category visibility below. Too many entries will make cells very small.
+          </span>
+        </span>
       </h3>
-      <p class="config-hint">
-        Airports are loaded from <code>OurAirports.com</code> (updated weekly).
-        Adjust center, radius, types, and category visibility below. Too many entries will make cells very small.
-      </p>
 
       <!-- Leaflet map -->
       <div id="map"></div>
