@@ -583,7 +583,7 @@
         Airport / Navaid Configuration (JSON)
       </h3>
       <p class="config-hint">
-        Airports are loaded from <code>https://ourairports.com/airports.csv</code> (with a small built-in fallback).
+        Airports are loaded from <code>airports.csv</code> (updated weekly via GitHub Actions, with a small built-in fallback).
         Adjust center, radius, types, and category visibility below. Too many entries will make cells very small.
       </p>
 
@@ -907,7 +907,7 @@
     }
 async function loadAirportDb() {
   try {
-    const res = await fetch("https://ourairports.com/airports.csv");
+    const res = await fetch("airports.csv");
     if (!res.ok) throw new Error("HTTP " + res.status);
 
     const csvText = await res.text();
