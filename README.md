@@ -2,6 +2,8 @@
 Generates a simple poster containing useful information:
 [Check it out here](https://ni2be.github.io/pilot-reference/)
 
+<img width="795" height="1240" alt="image" src="/docs/image.png" />
+
 ## How to use?
 
 ### Finding Airports
@@ -30,6 +32,3 @@ Generates a simple poster containing useful information:
 ### Data Updates
 - Airport data is automatically updated every Sunday from [OurAirports.com](https://ourairports.com)
 - The dataset includes worldwide airports with coordinates, types, and elevation data
-
-<img width="795" height="1240" alt="image" src="/docs/image.png" />
-
