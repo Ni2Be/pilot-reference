@@ -203,6 +203,50 @@
       justify-content: center;
       min-height: 56px;
       min-width: 0; /* allow shrink in CSS grid */
+      position: relative;
+      cursor: move;
+      transition: opacity 0.2s ease;
+    }
+
+    .airport-cell:hover {
+      opacity: 0.9;
+    }
+
+    .airport-cell.dragging {
+      opacity: 0.4;
+    }
+
+    .airport-cell.drag-over {
+      border: 2px dashed #555;
+    }
+
+    .airport-remove {
+      position: absolute;
+      top: 2px;
+      right: 2px;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: #c0392b;
+      color: white;
+      border: none;
+      cursor: pointer;
+      font-size: 10px;
+      line-height: 1;
+      padding: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .airport-cell:hover .airport-remove {
+      opacity: 1;
+    }
+
+    .airport-remove:hover {
+      background: #a93226;
     }
 
     .airport-id {
@@ -409,6 +453,12 @@
       .config-section {
         display: none;
       }
+      .airport-remove {
+        display: none;
+      }
+      .airport-cell {
+        cursor: default;
+      }
     }
   </style>
 </head>
@@ -578,17 +628,31 @@
 
     <!-- Config section (not part of printed poster) -->
     <div class="config-section">
+      
+      <div class="config-controls">
+        <span>Show sections:</span>
+        <label><input type="checkbox" class="category-filter" data-target="section-nato" checked /> NATO</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-metar" checked /> METAR/TAF</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-emergency" checked /> Emergency</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-vfr" checked /> VFR</label>
+        <label><input type="checkbox" class="category-filter" data-target="section-airports" checked /> Airports</label>
+      </div>
+
+      <br />
+
       <h3 class="config-title">
         <span class="icon" data-lucide="settings-2"></span>
         Airport / Navaid Configuration (JSON)
       </h3>
       <p class="config-hint">
-        Airports are loaded from <code>airports.csv</code> (updated weekly via GitHub Actions, with a small built-in fallback).
+        Airports are loaded from <code>OurAirports.com</code> (updated weekly).
         Adjust center, radius, types, and category visibility below. Too many entries will make cells very small.
       </p>
 
       <!-- Leaflet map -->
       <div id="map"></div>
+
+      <br />
 
       <div class="config-controls">
         <label>
@@ -629,30 +693,33 @@
         <label><input type="checkbox" class="type-filter" value="closed" /> closed</label>
       </div>
 
-      <div class="config-controls">
-        <span>Show sections:</span>
-        <label><input type="checkbox" class="category-filter" data-target="section-nato" checked /> NATO</label>
-        <label><input type="checkbox" class="category-filter" data-target="section-metar" checked /> METAR/TAF</label>
-        <label><input type="checkbox" class="category-filter" data-target="section-emergency" checked /> Emergency</label>
-        <label><input type="checkbox" class="category-filter" data-target="section-vfr" checked /> VFR</label>
-        <label><input type="checkbox" class="category-filter" data-target="section-airports" checked /> Airports</label>
-      </div>
-
       <div id="search-results">
         <div class="empty">No search yet. Results will appear here.</div>
       </div>
-
-      <pre class="config-example">
-[
-  {"id": "EDDF", "name": "Frankfurt/Main", "altitude_ft": 364},
-  ...
-]
-      </pre>
+      <br />
       <textarea id="airport-config"></textarea>
       <div class="actions">
         <button id="apply-airports">Apply</button>
       </div>
       <div id="config-error"></div>
+    </div>
+
+    <!-- Unsaved changes modal -->
+    <div id="unsaved-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; align-items: center; justify-content: center;">
+      <div style="background: white; padding: 24px; border-radius: 8px; max-width: 500px; box-shadow: 0 4px 16px rgba(0,0,0,0.3);">
+        <h3 style="margin: 0 0 16px; font-size: 18px; color: #c0392b;">⚠ Unsaved Changes Warning</h3>
+        <p style="margin: 0 0 16px; font-size: 14px;">
+          You have made manual changes (removed airports or reordered them).
+          <strong>This action will discard your changes.</strong>
+        </p>
+        <p style="margin: 0 0 20px; font-size: 14px;">
+          Do you want to continue?
+        </p>
+        <div style="text-align: right; display: flex; gap: 8px; justify-content: flex-end;">
+          <button id="modal-cancel" style="border-radius: 999px; border: 1px solid #333; padding: 8px 20px; cursor: pointer; background: #fff; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Cancel</button>
+          <button id="modal-confirm" style="border-radius: 999px; border: 1px solid #c0392b; padding: 8px 20px; cursor: pointer; background: #c0392b; color: white; font-size: 12px; text-transform: uppercase; letter-spacing: 0.06em;">Discard and Continue</button>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -684,6 +751,7 @@
 
     let airportDb = FALLBACK_AIRPORT_DB;
     let currentAirports = airportDb.slice(0, 20);
+    let hasManualEdits = false;  // Track user modifications (remove/drag-drop/apply)
 
     const NATO_ALPHABET = [
       { letter: "A", word: "Alfa",     morse: ".-"   },
@@ -756,16 +824,60 @@
       });
     }
 
+    function updateTextareaFromCurrentAirports() {
+      const textarea = document.getElementById("airport-config");
+      if (textarea) {
+        textarea.value = JSON.stringify(currentAirports, null, 2);
+      }
+    }
+
+    function updateTextareaFromFilteredAirports() {
+      const textarea = document.getElementById("airport-config");
+      if (textarea) {
+        const filtered = getFilteredAirports(currentAirports);
+        textarea.value = JSON.stringify(filtered, null, 2);
+      }
+    }
+
     function renderAirportsGrid(airports, cols) {
       const container = document.getElementById("airports-grid");
       container.innerHTML = "";
 
+      // Handle empty filter state
+      if (airports.length === 0) {
+        container.innerHTML = '<div style="grid-column: 1 / -1; text-align: center; padding: 32px 20px; color: #777; font-size: 14px;">No airports match current filters. Adjust type filters above or click \'Find nearby\' to load airports.</div>';
+        return;
+      }
+
       const validCols = Number.isFinite(cols) && cols > 0 ? cols : 10;
       container.style.gridTemplateColumns = `repeat(${validCols}, minmax(0, 1fr))`;
 
-      airports.forEach(ap => {
+      airports.forEach((ap, index) => {
         const cell = document.createElement("div");
         cell.className = "airport-cell";
+        cell.draggable = true;
+        cell.dataset.index = index;
+        cell.dataset.airportId = ap.id;  // Store ID for lookup
+
+        // Remove button
+        const removeBtn = document.createElement("button");
+        removeBtn.className = "airport-remove";
+        removeBtn.textContent = "×";
+        removeBtn.title = "Remove airport";
+        removeBtn.addEventListener("click", (e) => {
+          e.stopPropagation();
+
+          // Find airport by ID, not by filtered array index
+          const airportId = ap.id;
+          const actualIndex = currentAirports.findIndex(a => a.id === airportId);
+
+          if (actualIndex !== -1) {
+            currentAirports.splice(actualIndex, 1);
+            hasManualEdits = true;
+            renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+            updateTextareaFromFilteredAirports();
+          }
+        });
 
         const idEl = document.createElement("div");
         idEl.className = "airport-id";
@@ -780,12 +892,134 @@
         altEl.className = "airport-alt";
         altEl.textContent = (ap.altitude_ft ?? "UNKNOWN") + " ft";
 
+        cell.appendChild(removeBtn);
         cell.appendChild(idEl);
         cell.appendChild(nameEl);
         cell.appendChild(altEl);
 
+        // Drag and drop handlers
+        cell.addEventListener("dragstart", handleDragStart);
+        cell.addEventListener("dragover", handleDragOver);
+        cell.addEventListener("drop", handleDrop);
+        cell.addEventListener("dragend", handleDragEnd);
+        cell.addEventListener("dragenter", handleDragEnter);
+        cell.addEventListener("dragleave", handleDragLeave);
+
         container.appendChild(cell);
       });
+    }
+
+    let draggedElement = null;
+
+    function handleDragStart(e) {
+      draggedElement = this;
+      this.classList.add("dragging");
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/html", this.innerHTML);
+    }
+
+    function handleDragOver(e) {
+      if (e.preventDefault) {
+        e.preventDefault();
+      }
+      e.dataTransfer.dropEffect = "move";
+      return false;
+    }
+
+    function handleDragEnter(e) {
+      if (this !== draggedElement) {
+        this.classList.add("drag-over");
+      }
+    }
+
+    function handleDragLeave(e) {
+      // Only remove drag-over if we're actually leaving the element
+      // (not just moving to a child element)
+      const rect = this.getBoundingClientRect();
+      const x = e.clientX;
+      const y = e.clientY;
+
+      if (x < rect.left || x >= rect.right || y < rect.top || y >= rect.bottom) {
+        this.classList.remove("drag-over");
+      }
+    }
+
+    function handleDrop(e) {
+      if (e.stopPropagation) {
+        e.stopPropagation();
+      }
+
+      if (draggedElement !== this) {
+        // Get airport IDs instead of filtered array indices
+        const draggedId = draggedElement.dataset.airportId;
+        const targetId = this.dataset.airportId;
+
+        // Find actual indices in currentAirports
+        const draggedIndex = currentAirports.findIndex(a => a.id === draggedId);
+        const targetIndex = currentAirports.findIndex(a => a.id === targetId);
+
+        if (draggedIndex !== -1 && targetIndex !== -1 && draggedIndex !== targetIndex) {
+          // Determine if dragging forward or backward
+          const isDraggingForward = draggedIndex < targetIndex;
+
+          // Reorder in the unfiltered array
+          const draggedItem = currentAirports[draggedIndex];
+          currentAirports.splice(draggedIndex, 1);
+
+          // Recalculate target index after removal
+          let newTargetIndex = currentAirports.findIndex(a => a.id === targetId);
+
+          // When dragging forward, insert after the target
+          // When dragging backward, insert before the target
+          if (isDraggingForward) {
+            newTargetIndex += 1;
+          }
+
+          currentAirports.splice(newTargetIndex, 0, draggedItem);
+
+          hasManualEdits = true;
+          renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+          updateTextareaFromFilteredAirports();
+        }
+      }
+
+      return false;
+    }
+
+    function handleDragEnd(e) {
+      this.classList.remove("dragging");
+      document.querySelectorAll(".airport-cell").forEach(cell => {
+        cell.classList.remove("drag-over");
+      });
+    }
+
+    function showUnsavedChangesModal(onConfirm) {
+      const modal = document.getElementById("unsaved-modal");
+      if (!modal) return;
+
+      modal.style.display = "flex";
+
+      const cancelBtn = document.getElementById("modal-cancel");
+      const confirmBtn = document.getElementById("modal-confirm");
+
+      function cleanup() {
+        modal.style.display = "none";
+        cancelBtn.removeEventListener("click", onCancel);
+        confirmBtn.removeEventListener("click", onConfirmClick);
+      }
+
+      function onCancel() {
+        cleanup();
+      }
+
+      function onConfirmClick() {
+        cleanup();
+        hasManualEdits = false;  // Reset flag
+        onConfirm();
+      }
+
+      cancelBtn.addEventListener("click", onCancel);
+      confirmBtn.addEventListener("click", onConfirmClick);
     }
 
     function haversineKm(lat1, lon1, lat2, lon2) {
@@ -957,11 +1191,7 @@ async function loadAirportDb() {
     const nearby = findAirportsInRadius(centerLat, centerLon, radiusKm, airportDb).slice(0, 75);
     currentAirports = nearby.length ? nearby : airportDb.slice(0, 75);
 
-    const textarea = document.getElementById("airport-config");
-    if (textarea) {
-      textarea.value = JSON.stringify(currentAirports, null, 2);
-    }
-
+    updateTextareaFromFilteredAirports();
     renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
   } catch (e) {
     console.error("Failed to load OurAirports CSV, using fallback DB.", e);
@@ -980,9 +1210,7 @@ async function loadAirportDb() {
       const placeQuery = document.getElementById("place-query");
       const searchBtn  = document.getElementById("search-place");
 
-      if (textarea) {
-        textarea.value = JSON.stringify(currentAirports, null, 2);
-      }
+      updateTextareaFromFilteredAirports();
 
       function applyConfigFromTextarea() {
         if (!textarea) return;
@@ -993,8 +1221,20 @@ async function loadAirportDb() {
         try {
           const parsed = JSON.parse(textarea.value);
           if (!Array.isArray(parsed)) throw new Error("JSON root must be an array.");
-          currentAirports = parsed;
+
+          // Smart merge: preserve hidden airports, update visible ones
+          const filtered = getFilteredAirports(currentAirports);
+          const filteredIds = new Set(filtered.map(a => a.id));
+
+          // Keep airports that are currently hidden by filters
+          const hiddenAirports = currentAirports.filter(a => !filteredIds.has(a.id));
+
+          // Merge hidden airports with new visible airports from textarea
+          currentAirports = [...hiddenAirports, ...parsed];
+
+          hasManualEdits = true;
           renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+          updateTextareaFromFilteredAirports();
         } catch (e) {
           console.error(e);
           errorEl.textContent = "Invalid JSON: " + e.message;
@@ -1004,30 +1244,42 @@ async function loadAirportDb() {
       applyBtn.addEventListener("click", applyConfigFromTextarea);
 
       findNearby.addEventListener("click", () => {
-        errorEl.textContent = "";
+        function doFindNearby() {
+          errorEl.textContent = "";
 
-        const lat = parseFloat(centerLat.value);
-        const lon = parseFloat(centerLon.value);
-        const r   = parseFloat(radiusKm.value);
+          const lat = parseFloat(centerLat.value);
+          const lon = parseFloat(centerLon.value);
+          const r   = parseFloat(radiusKm.value);
 
-        if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(r) || r <= 0) {
-          errorEl.textContent = "Invalid center or radius.";
-          return;
+          if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(r) || r <= 0) {
+            errorEl.textContent = "Invalid center or radius.";
+            return;
+          }
+
+          const nearby = findAirportsInRadius(lat, lon, r, airportDb);
+          if (nearby.length === 0) {
+            errorEl.textContent = "No airports in range (DB may be limited).";
+          }
+
+          currentAirports = nearby;
+          hasManualEdits = false;  // Reset after operation
+
+          if (textarea) {
+            textarea.value = JSON.stringify(nearby, null, 2);
+          }
+
+          let cols = parseInt(colsInput.value, 10);
+          if (!Number.isFinite(cols) || cols < 1) cols = 10;
+          renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+          updateTextareaFromFilteredAirports();
         }
 
-        const nearby = findAirportsInRadius(lat, lon, r, airportDb);
-        if (nearby.length === 0) {
-          errorEl.textContent = "No airports in range (DB may be limited).";
+        // Check for manual edits before proceeding
+        if (hasManualEdits) {
+          showUnsavedChangesModal(doFindNearby);
+        } else {
+          doFindNearby();
         }
-
-        currentAirports = nearby;
-        if (textarea) {
-          textarea.value = JSON.stringify(nearby, null, 2);
-        }
-
-        let cols = parseInt(colsInput.value, 10);
-        if (!Number.isFinite(cols) || cols < 1) cols = 10;
-        renderAirportsGrid(getFilteredAirports(currentAirports), cols);
       });
 
       searchBtn.addEventListener("click", async () => {
@@ -1055,6 +1307,7 @@ async function loadAirportDb() {
           if (cb.checked) enabledTypes.add(cb.value);
           else enabledTypes.delete(cb.value);
           renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+          updateTextareaFromFilteredAirports();
         });
       });
 
