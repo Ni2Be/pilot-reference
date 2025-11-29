@@ -744,7 +744,7 @@
           <span class="icon" data-lucide="info"></span>
           <span class="info-tooltip">
             Airports are loaded from <code>OurAirports.com</code> (updated weekly).
-            Adjust center, radius, types, and category visibility below. Too many entries will make cells very small.
+            Use "Add Airports" to build your list from multiple regions. Use type filters to show/hide categories. Too many entries will make cells very small.
           </span>
         </span>
       </h3>
@@ -805,7 +805,8 @@
           Radius (km):
           <input type="number" id="radius-km" min="10" max="2000" value="75" />
         </label>
-        <button id="find-nearby">Find nearby</button>
+        <button id="find-nearby">Add Airports</button>
+        <button id="clear-all">Clear All</button>
       </div>
 
       <div class="config-controls">
@@ -1400,12 +1401,8 @@ async function loadAirportDb() {
     // Replace DB with real OurAirports data
     airportDb = airports;
 
-    const centerLat = parseFloat(document.getElementById("center-lat").value) || 50.0;
-    const centerLon = parseFloat(document.getElementById("center-lon").value) || 8.0;
-    const radiusKm  = parseFloat(document.getElementById("radius-km").value)  || 75;
-
-    const nearby = findAirportsInRadius(centerLat, centerLon, radiusKm, airportDb).slice(0, 75);
-    currentAirports = nearby.length ? nearby : airportDb.slice(0, 75);
+    // Start with empty list - user will add airports using "Add Airports" button
+    currentAirports = [];
 
     updateTextareaFromFilteredAirports();
     renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
@@ -1421,6 +1418,7 @@ async function loadAirportDb() {
       const applyBtn   = document.getElementById("apply-airports");
       const colsInput  = document.getElementById("airport-cols");
       const findNearby = document.getElementById("find-nearby");
+      const clearAll   = document.getElementById("clear-all");
       const centerLat  = document.getElementById("center-lat");
       const centerLon  = document.getElementById("center-lon");
       const radiusKm   = document.getElementById("radius-km");
@@ -1463,43 +1461,51 @@ async function loadAirportDb() {
       applyBtn.addEventListener("click", applyConfigFromTextarea);
 
       findNearby.addEventListener("click", () => {
-        function doFindNearby() {
-          errorEl.textContent = "";
+        errorEl.textContent = "";
 
-          const lat = parseFloat(centerLat.value);
-          const lon = parseFloat(centerLon.value);
-          const r   = parseFloat(radiusKm.value);
+        const lat = parseFloat(centerLat.value);
+        const lon = parseFloat(centerLon.value);
+        const r   = parseFloat(radiusKm.value);
 
-          if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(r) || r <= 0) {
-            errorEl.textContent = "Invalid center or radius.";
-            return;
-          }
-
-          const nearby = findAirportsInRadius(lat, lon, r, airportDb);
-          if (nearby.length === 0) {
-            errorEl.textContent = "No airports in range (DB may be limited).";
-          }
-
-          currentAirports = nearby;
-          hasManualEdits = false;  // Reset after operation
-
-          if (textarea) {
-            textarea.value = JSON.stringify(nearby, null, 2);
-          }
-
-          let cols = parseInt(colsInput.value, 10);
-          if (!Number.isFinite(cols) || cols < 1) cols = 10;
-          renderAirportsGrid(getFilteredAirports(currentAirports), cols);
-          updateTextareaFromFilteredAirports();
-          updateAirportMarkers();
+        if (!Number.isFinite(lat) || !Number.isFinite(lon) || !Number.isFinite(r) || r <= 0) {
+          errorEl.textContent = "Invalid center or radius.";
+          return;
         }
 
-        // Check for manual edits before proceeding
-        if (hasManualEdits) {
-          showUnsavedChangesModal(doFindNearby);
-        } else {
-          doFindNearby();
+        const nearby = findAirportsInRadius(lat, lon, r, airportDb);
+        if (nearby.length === 0) {
+          errorEl.textContent = "No airports in range (DB may be limited).";
+          return;
         }
+
+        // Add nearby airports to existing list, avoiding duplicates
+        const existingIds = new Set(currentAirports.map(a => a.id));
+        const newAirports = nearby.filter(a => !existingIds.has(a.id));
+
+        if (newAirports.length === 0) {
+          errorEl.textContent = "All airports in range are already in the list.";
+          return;
+        }
+
+        currentAirports = [...currentAirports, ...newAirports];
+        hasManualEdits = true;  // Mark as edited since we're adding
+
+        let cols = parseInt(colsInput.value, 10);
+        if (!Number.isFinite(cols) || cols < 1) cols = 10;
+        renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+        updateTextareaFromFilteredAirports();
+        updateAirportMarkers();
+      });
+
+      clearAll.addEventListener("click", () => {
+        currentAirports = [];
+        hasManualEdits = false;
+
+        let cols = parseInt(colsInput.value, 10);
+        if (!Number.isFinite(cols) || cols < 1) cols = 10;
+        renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+        updateTextareaFromFilteredAirports();
+        updateAirportMarkers();
       });
 
       searchBtn.addEventListener("click", async () => {
