@@ -191,6 +191,7 @@
       gap: 6px;
       font-size: 11px;
       width: 100%;
+      overflow-anchor: none;
     }
 
     .airport-cell {
@@ -329,6 +330,7 @@
       padding-top: 14px;
       font-size: 12px;
       color: #333333;
+      overflow-anchor: auto;
     }
 
     .config-title {
@@ -974,6 +976,26 @@
       }
     }
 
+    // Helper function to preserve config section position during grid changes
+    function preserveConfigSectionPosition(callback) {
+      const configSection = document.querySelector('.config-section');
+      const configTop = configSection ? configSection.getBoundingClientRect().top : null;
+
+      // Execute the callback that modifies grid
+      callback();
+
+      // Restore position after DOM updates
+      requestAnimationFrame(() => {
+        if (configSection && configTop !== null) {
+          const newConfigTop = configSection.getBoundingClientRect().top;
+          const scrollAdjustment = newConfigTop - configTop;
+          if (Math.abs(scrollAdjustment) > 1) {
+            window.scrollBy({ top: scrollAdjustment, behavior: 'instant' });
+          }
+        }
+      });
+    }
+
     function renderAirportsGrid(airports, cols) {
       const container = document.getElementById("airports-grid");
       container.innerHTML = "";
@@ -1007,11 +1029,13 @@
           const actualIndex = currentAirports.findIndex(a => a.id === airportId);
 
           if (actualIndex !== -1) {
-            currentAirports.splice(actualIndex, 1);
-            hasManualEdits = true;
-            renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
-            updateTextareaFromFilteredAirports();
-            updateAirportMarkers();
+            preserveConfigSectionPosition(() => {
+              currentAirports.splice(actualIndex, 1);
+              hasManualEdits = true;
+              renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+              updateTextareaFromFilteredAirports();
+              updateAirportMarkers();
+            });
           }
         });
 
@@ -1121,10 +1145,12 @@
 
           currentAirports.splice(newTargetIndex, 0, draggedItem);
 
-          hasManualEdits = true;
-          renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
-          updateTextareaFromFilteredAirports();
-          updateAirportMarkers();
+          preserveConfigSectionPosition(() => {
+            hasManualEdits = true;
+            renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+            updateTextareaFromFilteredAirports();
+            updateAirportMarkers();
+          });
         }
       }
 
@@ -1440,20 +1466,22 @@ async function loadAirportDb() {
           const parsed = JSON.parse(textarea.value);
           if (!Array.isArray(parsed)) throw new Error("JSON root must be an array.");
 
-          // Smart merge: preserve hidden airports, update visible ones
-          const filtered = getFilteredAirports(currentAirports);
-          const filteredIds = new Set(filtered.map(a => a.id));
+          preserveConfigSectionPosition(() => {
+            // Smart merge: preserve hidden airports, update visible ones
+            const filtered = getFilteredAirports(currentAirports);
+            const filteredIds = new Set(filtered.map(a => a.id));
 
-          // Keep airports that are currently hidden by filters
-          const hiddenAirports = currentAirports.filter(a => !filteredIds.has(a.id));
+            // Keep airports that are currently hidden by filters
+            const hiddenAirports = currentAirports.filter(a => !filteredIds.has(a.id));
 
-          // Merge hidden airports with new visible airports from textarea
-          currentAirports = [...hiddenAirports, ...parsed];
+            // Merge hidden airports with new visible airports from textarea
+            currentAirports = [...hiddenAirports, ...parsed];
 
-          hasManualEdits = true;
-          renderAirportsGrid(getFilteredAirports(currentAirports), cols);
-          updateTextareaFromFilteredAirports();
-          updateAirportMarkers();
+            hasManualEdits = true;
+            renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+            updateTextareaFromFilteredAirports();
+            updateAirportMarkers();
+          });
         } catch (e) {
           console.error(e);
           errorEl.textContent = "Invalid JSON: " + e.message;
@@ -1489,25 +1517,29 @@ async function loadAirportDb() {
           return;
         }
 
-        currentAirports = [...currentAirports, ...newAirports];
-        hasManualEdits = true;  // Mark as edited since we're adding
+        preserveConfigSectionPosition(() => {
+          currentAirports = [...currentAirports, ...newAirports];
+          hasManualEdits = true;  // Mark as edited since we're adding
 
-        let cols = parseInt(colsInput.value, 10);
-        if (!Number.isFinite(cols) || cols < 1) cols = 10;
-        renderAirportsGrid(getFilteredAirports(currentAirports), cols);
-        updateTextareaFromFilteredAirports();
-        updateAirportMarkers();
+          let cols = parseInt(colsInput.value, 10);
+          if (!Number.isFinite(cols) || cols < 1) cols = 10;
+          renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+          updateTextareaFromFilteredAirports();
+          updateAirportMarkers();
+        });
       });
 
       clearAll.addEventListener("click", () => {
-        currentAirports = [];
-        hasManualEdits = false;
+        preserveConfigSectionPosition(() => {
+          currentAirports = [];
+          hasManualEdits = false;
 
-        let cols = parseInt(colsInput.value, 10);
-        if (!Number.isFinite(cols) || cols < 1) cols = 10;
-        renderAirportsGrid(getFilteredAirports(currentAirports), cols);
-        updateTextareaFromFilteredAirports();
-        updateAirportMarkers();
+          let cols = parseInt(colsInput.value, 10);
+          if (!Number.isFinite(cols) || cols < 1) cols = 10;
+          renderAirportsGrid(getFilteredAirports(currentAirports), cols);
+          updateTextareaFromFilteredAirports();
+          updateAirportMarkers();
+        });
       });
 
       searchBtn.addEventListener("click", async () => {
@@ -1532,20 +1564,30 @@ async function loadAirportDb() {
 
       document.querySelectorAll(".type-filter").forEach(cb => {
         cb.addEventListener("change", () => {
-          if (cb.checked) enabledTypes.add(cb.value);
-          else enabledTypes.delete(cb.value);
-          renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
-          updateTextareaFromFilteredAirports();
-          updateAirportMarkers();
+          preserveConfigSectionPosition(() => {
+            if (cb.checked) enabledTypes.add(cb.value);
+            else enabledTypes.delete(cb.value);
+            renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
+            updateTextareaFromFilteredAirports();
+            updateAirportMarkers();
+          });
         });
       });
 
       document.querySelectorAll(".category-filter").forEach(cb => {
         cb.addEventListener("change", () => {
-          const targetId = cb.dataset.target;
-          const el = document.getElementById(targetId);
-          if (!el) return;
-          el.style.display = cb.checked ? "" : "none";
+          preserveConfigSectionPosition(() => {
+            const targetId = cb.dataset.target;
+            const el = document.getElementById(targetId);
+            if (!el) return;
+            el.style.display = cb.checked ? "" : "none";
+          });
+        });
+      });
+
+      colsInput.addEventListener("input", () => {
+        preserveConfigSectionPosition(() => {
+          renderAirportsGrid(getFilteredAirports(currentAirports), getCurrentCols());
         });
       });
     }
