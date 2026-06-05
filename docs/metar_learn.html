@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>METAR Trainer – Lernen & Prüfung</title>
+  <style>
+    :root{--bg:#0b1020;--card:#111936;--card2:#172142;--text:#eef3ff;--muted:#aeb9d6;--accent:#7dd3fc;--accent2:#a78bfa;--ok:#4ade80;--bad:#fb7185;--warn:#facc15;--line:#2b365f;--input:#0e1530}*{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:radial-gradient(circle at top left,#1e3a8a 0,#0b1020 36%,#070a14 100%);color:var(--text);min-height:100vh}.wrap{max-width:1180px;margin:0 auto;padding:28px 16px 64px}header{display:flex;gap:16px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-bottom:20px}.brand{display:flex;flex-direction:column;gap:4px}h1{font-size:clamp(28px,4vw,48px);line-height:1;margin:0;letter-spacing:-.04em}.sub{color:var(--muted);max-width:760px}.tabs{display:flex;gap:10px;flex-wrap:wrap}.tab,.btn{border:1px solid var(--line);background:linear-gradient(180deg,#1b2550,#10172f);color:var(--text);border-radius:14px;padding:11px 15px;font-weight:700;cursor:pointer;box-shadow:0 8px 24px #0004}.tab.active,.btn.primary{border-color:#7dd3fc99;background:linear-gradient(180deg,#2563eb,#1d4ed8)}.btn.ghost{background:transparent}.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:16px}@media(max-width:900px){.grid{grid-template-columns:1fr}}.card{background:linear-gradient(180deg,#121a38dd,#0d1329ee);border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:0 18px 60px #0006}.card h2,.card h3{margin:0 0 12px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:#0f1732;border-radius:999px;padding:6px 10px;color:var(--muted);font-size:13px}.metar{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:clamp(19px,3vw,30px);line-height:1.35;background:#050814;border:1px solid #33426f;border-radius:18px;padding:18px;word-break:break-word;letter-spacing:.02em}.bigcode{font-size:clamp(44px,8vw,80px);font-weight:900;letter-spacing:.03em;text-align:center;background:linear-gradient(135deg,#7dd3fc,#a78bfa);-webkit-background-clip:text;background-clip:text;color:transparent;margin:14px 0}.choices{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:14px}@media(max-width:640px){.choices{grid-template-columns:1fr}}.choice{min-height:84px;text-align:left;border:1px solid var(--line);background:#101936;border-radius:18px;padding:14px;color:var(--text);cursor:pointer;font-size:17px}.choice:hover{border-color:#7dd3fc}.choice.correct{border-color:var(--ok);background:#064e3b}.choice.wrong{border-color:var(--bad);background:#4c0519}.answer{margin-top:14px;padding:14px;border-radius:16px;background:#0b122b;border:1px solid var(--line);color:var(--muted)}.answer b{color:var(--text)}.toolbar{display:flex;gap:10px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:14px}.hidden{display:none!important}.list{display:grid;gap:8px}.item{padding:10px 12px;background:#0b122b;border:1px solid var(--line);border-radius:14px;color:var(--muted)}.item b{color:var(--text)}details{border:1px solid var(--line);border-radius:16px;background:#0c1430;margin:8px 0;overflow:hidden}summary{cursor:pointer;padding:12px 14px;font-weight:800}details .inside{padding:0 14px 14px;color:var(--muted)}.exam-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}@media(max-width:760px){.exam-grid{grid-template-columns:1fr}}label{display:block;font-weight:700;margin:8px 0 6px;color:#dbeafe}input,select{width:100%;padding:11px 12px;border-radius:12px;border:1px solid var(--line);background:var(--input);color:var(--text);font-size:16px}.mini{font-size:13px;color:var(--muted);margin-top:5px}.result{margin-top:12px;border-radius:16px;padding:12px;border:1px solid var(--line);background:#0b122b}.ok{color:var(--ok)}.bad{color:var(--bad)}.warn{color:var(--warn)}.score{font-size:24px;font-weight:900}.kpi{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}.kbd{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:#020617;border:1px solid #334155;border-radius:8px;padding:2px 6px;color:#bfdbfe}.footer{color:var(--muted);font-size:13px;margin-top:18px}.smallbtn{font-size:13px;padding:8px 10px;border-radius:12px}.checkrow{display:flex;gap:8px;align-items:center;margin:7px 0}.checkrow input{width:auto}.toggle{display:flex;gap:10px;align-items:center}.toggle input{width:auto}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.section-title{margin-top:18px;color:#bfdbfe}.button-group{display:flex;gap:8px;flex-wrap:wrap;margin:7px 0}.codebtn{border:1px solid var(--line);background:#101936;color:var(--text);border-radius:12px;padding:9px 10px;cursor:pointer;font-weight:800}.codebtn small{display:block;color:var(--muted);font-weight:600}.codebtn.active{border-color:var(--accent);background:#1d4ed8}.fullrow{grid-column:1/-1}.builder{border:1px solid var(--line);background:#0b122b;border-radius:14px;padding:12px;margin-top:6px}.selected-code{min-height:38px;padding:9px 10px;border-radius:12px;border:1px solid #33426f;background:#0b122b;color:#bfdbfe;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:800}.selected-summary{display:inline-flex;align-items:center;min-height:30px;padding:5px 10px;border-radius:999px;border:1px solid #33426f;background:#101936;color:#bfdbfe;font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-weight:800;margin:4px 0 10px} .only-hidden{position:absolute!important;left:-9999px!important;width:1px!important;height:1px!important;opacity:0!important;pointer-events:none!important}.cloud-layer{display:grid;grid-template-columns:1.2fr .8fr 1fr;gap:10px;align-items:end;margin:10px 0}@media(max-width:760px){.cloud-layer{grid-template-columns:1fr}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <h1>METAR Trainer</h1>
+        <div class="sub">Eine einzelne Offline‑HTML‑Datei zum Lernen und Prüfen von METAR‑Meldungen. Fokus: ICAO/Europa‑typische METARs; US‑RMK und Spezialfälle sind als Extra‑Themen enthalten.</div>
+      </div>
+      <nav class="tabs">
+        <button class="tab active" data-tab="learn">Lernen</button>
+        <button class="tab" data-tab="exam">Prüfung</button>
+        <button class="tab" data-tab="reference">METAR‑Liste</button>
+      </nav>
+    </header>
+
+    <section id="learn" class="screen">
+      <div class="grid">
+        <div class="card">
+          <div class="toolbar" style="margin-top:0"><span class="pill" id="learnCat">Kategorie</span><span class="pill">Frage <span id="learnCount">1</span></span></div>
+          <div class="bigcode" id="learnCode">SG</div>
+          <h2 id="learnQuestion">Was bedeutet dieser METAR‑Code?</h2>
+          <div class="choices"><button class="choice" id="choiceA"></button><button class="choice" id="choiceB"></button></div>
+          <div class="answer hidden" id="learnAnswer"></div>
+          <div class="toolbar"><button class="btn ghost" id="prevLearn">Zurück</button><button class="btn primary" id="nextLearn">Nächster Punkt</button></div>
+        </div>
+        <div class="card">
+          <h2>Lernumfang</h2>
+          <div class="kpi"><span class="pill">Wetter</span><span class="pill">Wind</span><span class="pill">Sicht</span><span class="pill">Wolken</span><span class="pill">RVR</span><span class="pill">Temperatur</span><span class="pill">QNH/Altimeter</span><span class="pill">Trends/RMK</span></div>
+          <p class="sub">Im Lernmodus bekommst du jeweils einen Code und zwei Antwortmöglichkeiten. Nach der Auswahl wird die richtige Antwort angezeigt.</p>
+          <h3 class="section-title">Optionen</h3>
+          <label class="toggle"><input type="checkbox" id="shuffleLearn" checked> Fragen mischen</label>
+          <label class="toggle"><input type="checkbox" id="hardMode"> Schwierigere Ablenker bevorzugen</label>
+          <button class="btn smallbtn" id="restartLearn">Lernen neu starten</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="exam" class="screen hidden">
+      <div class="grid">
+        <div class="card">
+          <div class="toolbar" style="margin-top:0"><h2>METAR dekodieren</h2><button class="btn smallbtn" id="newExam">Neue Prüfung</button></div>
+          <div class="metar" id="examMetar"></div>
+          <form id="examForm" autocomplete="off">
+            <div class="exam-grid">
+              <div><label>Tag des Monats</label><input id="day" type="number" min="1" max="31" placeholder="z. B. 12"><div class="mini">Aus Gruppe <span class="kbd">DDHHMMZ</span></div></div>
+              <div><label>Uhrzeit UTC</label><input id="time" placeholder="z. B. 1420"><div class="mini">Vierstellig, ohne Z</div></div>
+              <div><label>Windrichtung</label><input id="windDir" placeholder="z. B. 230"><div class="button-group" data-single="windDir"><button type="button" class="codebtn" data-value="VRB">VRB<small>variabel</small></button><button type="button" class="codebtn" data-value="000">000<small>windstill</small></button></div><div class="mini">Grad true; VRB/000 per Button möglich</div></div>
+              <div><label>Windstärke</label><input id="windSpeed" type="number" min="0" placeholder="z. B. 12"><div class="mini">in kt</div></div>
+              <div><label>Max. Böen</label><input id="gust" placeholder="z. B. 25 oder leer"><div class="mini">leer lassen, wenn keine Böen gemeldet</div></div>
+              <div><label>Windvariabilität</label><input id="varWind" placeholder="z. B. 180V260 oder leer"><div class="button-group" data-single="varWind"><button type="button" class="codebtn" data-value="">Keine<small>nicht gemeldet</small></button></div></div>
+              <div><label>Sichtweite</label><input id="vis" placeholder="z. B. 8000 oder 9999"><div class="button-group" data-single="vis"><button type="button" class="codebtn" data-value="9999">9999<small>10 km oder mehr</small></button><button type="button" class="codebtn" data-value="CAVOK">CAVOK<small>Sicht/Wolken OK</small></button></div></div>
+              <div><label>RVR</label><input id="rvr" placeholder="z. B. R25/0800U oder leer"><div class="button-group" data-single="rvr"><button type="button" class="codebtn" data-value="">Keine<small>nicht gemeldet</small></button></div></div>
+              <div class="fullrow"><label>Signifikantes Wetter</label><input id="weather" type="hidden"><div id="weatherDisplay" class="selected-code">leer = kein signifikantes Wetter</div><div class="builder"><div class="mini">Intensität</div><div class="button-group" data-weather-part="intensity"><button type="button" class="codebtn" data-value="">ohne<small>mäßig</small></button><button type="button" class="codebtn" data-value="-">-<small>leicht</small></button><button type="button" class="codebtn" data-value="+">+<small>stark</small></button><button type="button" class="codebtn" data-value="VC">VC<small>in der Nähe</small></button></div><div class="mini">Deskriptor</div><div class="button-group" data-weather-part="descriptor"><button type="button" class="codebtn" data-value="">kein</button><button type="button" class="codebtn" data-value="SH">SH<small>Schauer</small></button><button type="button" class="codebtn" data-value="TS">TS<small>Gewitter</small></button><button type="button" class="codebtn" data-value="FZ">FZ<small>gefrierend</small></button><button type="button" class="codebtn" data-value="BL">BL<small>aufgewirbelt</small></button></div><div class="mini">Phänomen</div><div class="button-group" data-weather-part="phenomenon"><button type="button" class="codebtn" data-value="">kein Wetter</button><button type="button" class="codebtn" data-value="RA">RA<small>Regen</small></button><button type="button" class="codebtn" data-value="DZ">DZ<small>Sprühregen</small></button><button type="button" class="codebtn" data-value="SN">SN<small>Schnee</small></button><button type="button" class="codebtn" data-value="SG">SG<small>Schneegriesel</small></button><button type="button" class="codebtn" data-value="BR">BR<small>feuchter Dunst</small></button><button type="button" class="codebtn" data-value="FG">FG<small>Nebel</small></button><button type="button" class="codebtn" data-value="GR">GR<small>Hagel</small></button></div></div></div>
+              <div class="fullrow"><label>Wolken</label><input id="clouds" class="only-hidden" tabindex="-1" aria-hidden="true"><div class="mini">Gewählte Wolkengruppe:</div><div id="cloudsDisplay" class="selected-summary">leer = keine Wolkengruppe</div><div class="builder"><div class="mini">Sonderfälle</div><div class="button-group" data-single="clouds"><button type="button" class="codebtn" data-value="">Keine Wolkengruppe<small>leer</small></button><button type="button" class="codebtn" data-value="NSC">NSC<small>keine signifikanten Wolken</small></button><button type="button" class="codebtn" data-value="SKC">SKC<small>wolkenlos</small></button><button type="button" class="codebtn" data-value="NCD">NCD<small>keine Wolken erkannt</small></button></div><div class="cloud-layer" data-layer="1"><div><div class="mini">1. Bedeckung — anklicken</div><div class="button-group" data-cloud="amount"><button type="button" class="codebtn" data-value="FEW">FEW<small>Few: 1–2/8</small></button><button type="button" class="codebtn" data-value="SCT">SCT<small>Scattered: 3–4/8</small></button><button type="button" class="codebtn" data-value="BKN">BKN<small>Broken: 5–7/8</small></button><button type="button" class="codebtn" data-value="OVC">OVC<small>Overcast: 8/8</small></button><button type="button" class="codebtn" data-value="VV">VV<small>Vertical Visibility</small></button></div></div><div><label>Höhe 1</label><input id="cloudH1" placeholder="020"></div><div><div class="mini">Typ — anklicken</div><div class="button-group" data-cloud="type"><button type="button" class="codebtn" data-value="">normal<small>kein Zusatz</small></button><button type="button" class="codebtn" data-value="CB">CB<small>Cumulonimbus</small></button><button type="button" class="codebtn" data-value="TCU">TCU<small>Towering Cumulus</small></button></div></div></div><div class="cloud-layer" data-layer="2"><div><div class="mini">2. Bedeckung — anklicken</div><div class="button-group" data-cloud="amount"><button type="button" class="codebtn" data-value="FEW">FEW<small>Few: 1–2/8</small></button><button type="button" class="codebtn" data-value="SCT">SCT<small>Scattered: 3–4/8</small></button><button type="button" class="codebtn" data-value="BKN">BKN<small>Broken: 5–7/8</small></button><button type="button" class="codebtn" data-value="OVC">OVC<small>Overcast: 8/8</small></button></div></div><div><label>Höhe 2</label><input id="cloudH2" placeholder="045"></div><div><div class="mini">Typ — anklicken</div><div class="button-group" data-cloud="type"><button type="button" class="codebtn" data-value="">normal<small>kein Zusatz</small></button><button type="button" class="codebtn" data-value="CB">CB<small>Cumulonimbus</small></button><button type="button" class="codebtn" data-value="TCU">TCU<small>Towering Cumulus</small></button></div></div></div></div></div>
+              <div><label>Temperatur</label><input id="temp" placeholder="z. B. 08 oder M02"></div>
+              <div><label>Taupunkt</label><input id="dew" placeholder="z. B. 04 oder M05"></div>
+              <div><label>QNH</label><input id="qnh" placeholder="z. B. 1013"></div>
+              <div><label>Trend</label><input id="trend" type="hidden"><div id="trendDisplay" class="selected-code">leer = kein Trend</div><div class="button-group" data-single="trend"><button type="button" class="codebtn" data-value="">Kein Trend</button><button type="button" class="codebtn" data-value="NOSIG">NOSIG<small>keine Änderung</small></button><button type="button" class="codebtn" data-value="BECMG">BECMG<small>allmählich</small></button><button type="button" class="codebtn" data-value="TEMPO">TEMPO<small>zeitweise</small></button></div></div>
+            </div>
+            <div class="toolbar"><button class="btn primary" type="submit">Auswerten</button><button class="btn ghost" type="button" id="showSolution">Lösung zeigen</button></div>
+          </form>
+        </div>
+        <div class="card">
+          <h2>Auswertung</h2>
+          <div id="examResult" class="result">Noch keine Auswertung.</div>
+          <h3 class="section-title">Hinweis</h3>
+          <p class="sub">Codes, die im METAR als Abkürzung stehen, wählst du über Buttons mit ausgeschriebener Bedeutung. Zahlen wie Windstärke, Sicht, QNH und Wolkenhöhe gibst du weiterhin ein.</p>
+        </div>
+      </div>
+    </section>
+
+    <section id="reference" class="screen hidden">
+      <div class="card">
+        <h2>Liste: Was in einem METAR stehen kann</h2>
+        <div id="referenceList"></div>
+      </div>
+    </section>
+    <div class="footer">Nicht für operative Flugvorbereitung verwenden. Lernhilfe ohne Gewähr.</div>
+  </div>
+
+<script>
+const learningItems = [
+  // Report basics
+  ['Kopfdaten','METAR','Routine-Flugplatz-Wettermeldung'],['Kopfdaten','SPECI','Sondermeldung bei signifikanter Wetteränderung'],['Kopfdaten','AUTO','Automatisch erzeugte Meldung'],['Kopfdaten','COR','Korrigierte Meldung'],['Kopfdaten','NIL','Keine Meldung verfügbar'],
+  ['Zeit','121420Z','Am 12. des Monats um 14:20 UTC veröffentlicht'],['Zeit','Z','UTC / Zulu-Zeit'],
+  // Wind
+  ['Wind','23012KT','Wind aus 230° mit 12 kt'],['Wind','VRB03KT','Variabler Wind mit 3 kt'],['Wind','00000KT','Windstill'],['Wind','23012G25KT','Wind aus 230° mit 12 kt, Böen bis 25 kt'],['Wind','180V260','Windrichtung variierend zwischen 180° und 260°'],['Wind','P99KT','Mehr als 99 kt'],['Wind','MPS','Meter pro Sekunde'],
+  // visibility
+  ['Sicht','9999','Sichtweite 10 km oder mehr'],['Sicht','8000','Sichtweite 8000 m'],['Sicht','CAVOK','Ceiling and Visibility OK: gute Sicht, keine relevanten Wolken/Wetterbedingungen'],['Sicht','NDV','Keine Richtungsvariation der Sicht verfügbar'],
+  // RVR
+  ['RVR','R25/0800','Pistensichtweite RWY 25: 800 m'],['RVR','R25/P1500','RVR größer als 1500 m'],['RVR','R25/M0050','RVR kleiner als 50 m'],['RVR','R25/0800U','RVR 800 m, Tendenz steigend'],['RVR','R25/0800D','RVR 800 m, Tendenz fallend'],['RVR','R25/0800N','RVR 800 m, keine Änderung'],
+  // Present weather intensity/proximity/descriptors
+  ['Wetter','-','Leicht'],['Wetter','+','Stark'],['Wetter','VC','In der Nähe / vicinity'],['Wetter','MI','Flach / shallow'],['Wetter','BC','Schwaden / patches'],['Wetter','PR','Teilweise / partial'],['Wetter','DR','Niedrig treibend'],['Wetter','BL','Aufgewirbelt / blowing'],['Wetter','SH','Schauer'],['Wetter','TS','Gewitter'],['Wetter','FZ','Gefrierend / unterkühlt'],
+  ['Niederschlag','DZ','Sprühregen / drizzle'],['Niederschlag','RA','Regen'],['Niederschlag','SN','Schnee'],['Niederschlag','SG','Schneegriesel'],['Niederschlag','IC','Eiskristalle'],['Niederschlag','PL','Eiskörner / ice pellets'],['Niederschlag','GR','Hagel'],['Niederschlag','GS','Graupel oder kleiner Hagel'],['Niederschlag','UP','Unbekannter Niederschlag'],
+  ['Sichtbehinderung','BR','Feuchter Dunst / mist'],['Sichtbehinderung','FG','Nebel'],['Sichtbehinderung','FU','Rauch'],['Sichtbehinderung','VA','Vulkanasche'],['Sichtbehinderung','DU','Ausgedehnter Staub'],['Sichtbehinderung','SA','Sand'],['Sichtbehinderung','HZ','Trockener Dunst'],['Sichtbehinderung','PY','Gischt / spray'],
+  ['Andere Wetterphänomene','PO','Staub-/Sandwirbel'],['Andere Wetterphänomene','SQ','Böenlinie / squall'],['Andere Wetterphänomene','FC','Trichterwolke/Tornado/Wasserhose'],['Andere Wetterphänomene','SS','Sandsturm'],['Andere Wetterphänomene','DS','Staubsturm'],['Wetter','-RA','Leichter Regen'],['Wetter','+TSRA','Starkes Gewitter mit Regen'],['Wetter','FZFG','Gefrierender Nebel'],['Wetter','SHSN','Schneeschauer'],
+  // Clouds
+  ['Wolken','SKC','Sky clear / wolkenlos'],['Wolken','CLR','Clear unter 12.000 ft, meist automatische Meldung'],['Wolken','NSC','Keine signifikanten Wolken'],['Wolken','NCD','Keine Wolken erkannt'],['Wolken','FEW020','1–2 Achtel Wolken in 2000 ft AGL'],['Wolken','SCT030','3–4 Achtel Wolken in 3000 ft AGL'],['Wolken','BKN045','5–7 Achtel Wolken in 4500 ft AGL'],['Wolken','OVC008','8 Achtel bedeckt in 800 ft AGL'],['Wolken','VV002','Vertikale Sicht 200 ft'],['Wolken','CB','Cumulonimbus'],['Wolken','TCU','Towering Cumulus'],
+  // temp pressure
+  ['Temperatur','08/04','Temperatur 8 °C, Taupunkt 4 °C'],['Temperatur','M02/M05','Temperatur -2 °C, Taupunkt -5 °C'],['Druck','Q1013','QNH 1013 hPa'],['Druck','A2992','Altimeter 29.92 inHg'],
+  // supplementary/trend
+  ['Ergänzungen','RE','Kürzlich beobachtetes Wetter / recent'],['Ergänzungen','RETS','Kürzlich Gewitter'],['Ergänzungen','WS RWY25','Windscherung auf RWY 25'],['Ergänzungen','W15/S4','Wassertemperatur 15 °C, Seegang 4'],['Ergänzungen','RWY STATE','Pistenzustand / runway state group'],['Trend','NOSIG','Keine signifikante Änderung erwartet'],['Trend','BECMG','Allmähliche Änderung erwartet'],['Trend','TEMPO','Zeitweilige Änderung erwartet'],['Trend','FM','Ab Zeitpunkt'],['Trend','TL','Bis Zeitpunkt'],['Trend','AT','Um Zeitpunkt'],['RMK','RMK','Remarks / Bemerkungen'],['RMK','AO1','Automatische Station ohne Niederschlagsunterscheidung'],['RMK','AO2','Automatische Station mit Niederschlagsunterscheidung'],['RMK','SLP','Sea level pressure in Remarks'],['RMK','Tornadic activity','Tornado/Funnel Cloud/Waterspout in Bemerkungen']
+];
+
+const reference = [
+ ['Meldungsart','METAR, SPECI; optional AUTO, COR, NIL'],
+ ['ICAO‑Station','Vier Buchstaben, z. B. EDDF, EDDM, KJFK'],
+ ['Zeitgruppe','DDHHMMZ: Tag des Monats, Stunde und Minute in UTC'],
+ ['Wind','dddffKT, VRBffKT, 00000KT, G für Böen, optionale Variable dddVddd, Einheiten KT/MPS/KMH'],
+ ['Vorherrschende Sicht','Meter, 9999 für 10 km oder mehr, CAVOK, regionale SM‑Angaben möglich'],
+ ['Mindest-/Richtungs‑Sicht','z. B. 1400SW, wenn eine schlechtere Sicht in einer Richtung gemeldet wird'],
+ ['RVR/Pistensichtweite','Rxx/nnnn, Rxx/Pnnnn, Rxx/Mnnnn, Tendenz U/D/N'],
+ ['Aktuelles Wetter','Intensität -/+/ohne, Nähe VC, Deskriptoren MI/BC/PR/DR/BL/SH/TS/FZ, Phänomene DZ/RA/SN/SG/IC/PL/GR/GS/UP/BR/FG/FU/VA/DU/SA/HZ/PY/PO/SQ/FC/SS/DS'],
+ ['Wolken','FEW/SCT/BKN/OVC plus Höhe in Hunderten Fuß; CB/TCU; SKC/CLR/NSC/NCD; VV für vertikale Sicht'],
+ ['Temperatur/Taupunkt','TT/TD in °C, negative Werte mit M, z. B. M02/M05'],
+ ['Luftdruck','Qxxxx in hPa oder Axxxx in inHg'],
+ ['Recent Weather','RE + Wettercode, z. B. RERA, RETS, RESN'],
+ ['Windscherung','WS RWYxx oder WS ALL RWY'],
+ ['Sea State','Wassertemperatur/Seegang, z. B. W15/S4'],
+ ['Runway State','Pistenzustandsgruppe, z. B. R25/CLRD oder numerische Gruppen, regional unterschiedlich'],
+ ['Trend Forecast','NOSIG, BECMG, TEMPO, FM, TL, AT, Wind/Sicht/Wetter/Wolken im Trendteil'],
+ ['Remarks/Supplemental','RMK, AO1/AO2, SLP, genaue Temperaturgruppen, Niederschlagsmengen, Tornado/Funnel Cloud, Lightning, Ceiling/Visibility Variability, regionale nationale Codes'],
+ ['Fehlende/automatische Sensorangaben','//// oder fehlende Gruppen; AUTO kann NCD/NDV/UP enthalten']
+];
+
+const exams = [
+ {metar:'METAR EDDF 121420Z 23012G25KT 180V260 8000 -RA FEW020 BKN045 08/04 Q1013 NOSIG', a:{day:'12',time:'1420',windDir:'230',windSpeed:'12',gust:'25',varWind:'180V260',vis:'8000',rvr:'',weather:'-RA',clouds:'FEW020 BKN045',temp:'08',dew:'04',qnh:'1013',trend:'NOSIG'}},
+ {metar:'METAR EDDM 231050Z VRB03KT 9999 SCT030 15/07 Q1021', a:{day:'23',time:'1050',windDir:'VRB',windSpeed:'3',gust:'',varWind:'',vis:'9999',rvr:'',weather:'',clouds:'SCT030',temp:'15',dew:'07',qnh:'1021',trend:''}},
+ {metar:'METAR EDDB 050720Z 00000KT 0600 R25/0800U FZFG VV002 M02/M03 Q1004 BECMG 1200 BR', a:{day:'5',time:'0720',windDir:'000',windSpeed:'0',gust:'',varWind:'',vis:'0600',rvr:'R25/0800U',weather:'FZFG',clouds:'VV002',temp:'M02',dew:'M03',qnh:'1004',trend:'BECMG'}},
+ {metar:'METAR LOWW 181900Z 31018KT 280V350 9999 TSRA SCT018CB BKN040 21/16 Q1008 TEMPO +TSRA', a:{day:'18',time:'1900',windDir:'310',windSpeed:'18',gust:'',varWind:'280V350',vis:'9999',rvr:'',weather:'TSRA',clouds:'SCT018CB BKN040',temp:'21',dew:'16',qnh:'1008',trend:'TEMPO'}},
+ {metar:'METAR EHAM 302250Z 19008KT CAVOK 12/09 Q1018 NOSIG', a:{day:'30',time:'2250',windDir:'190',windSpeed:'8',gust:'',varWind:'',vis:'CAVOK',rvr:'',weather:'',clouds:'',temp:'12',dew:'09',qnh:'1018',trend:'NOSIG'}},
+ {metar:'SPECI EGLL 071615Z 26020G35KT 4000 SHRA BKN012 09/07 Q0996 TEMPO 2000 +SHRA', a:{day:'7',time:'1615',windDir:'260',windSpeed:'20',gust:'35',varWind:'',vis:'4000',rvr:'',weather:'SHRA',clouds:'BKN012',temp:'09',dew:'07',qnh:'0996',trend:'TEMPO'}}
+];
+
+
+const englishMeanings = {"DU": "Dust", "SA": "Sand", "HZ": "Haze", "BR": "Mist", "FG": "Fog", "FU": "Smoke", "VA": "Volcanic Ash", "RA": "Rain", "DZ": "Drizzle", "SN": "Snow", "SG": "Snow Grains", "IC": "Ice Crystals", "PL": "Ice Pellets", "GR": "Hail", "GS": "Small Hail / Snow Pellets", "UP": "Unknown Precipitation", "PO": "Dust/Sand Whirls", "SQ": "Squall", "FC": "Funnel Cloud / Tornado / Waterspout", "SS": "Sandstorm", "DS": "Duststorm", "TS": "Thunderstorm", "SH": "Showers", "FZ": "Freezing", "VC": "Vicinity", "MI": "Shallow", "BC": "Patches", "PR": "Partial", "DR": "Low Drifting", "BL": "Blowing", "FEW": "Few Clouds", "SCT": "Scattered Clouds", "BKN": "Broken Clouds", "OVC": "Overcast", "CB": "Cumulonimbus", "TCU": "Towering Cumulus", "NOSIG": "No Significant Change", "BECMG": "Becoming", "TEMPO": "Temporary", "SKC": "Sky Clear", "NSC": "No Significant Clouds", "NCD": "No Clouds Detected", "VV": "Vertical Visibility"};
+const weatherState={intensity:'',descriptor:'',phenomenon:''};
+const cloudState={1:{amount:'',type:''},2:{amount:'',type:''}};
+function setActiveInGroup(group, btn){[...group.querySelectorAll('.codebtn')].forEach(b=>b.classList.remove('active')); btn.classList.add('active')}
+function showSelected(id, emptyText){const el=document.getElementById(id); const d=document.getElementById(id+'Display'); if(d) d.textContent=el.value||emptyText;}
+function updateWeather(){document.getElementById('weather').value=weatherState.phenomenon ? (weatherState.intensity+weatherState.descriptor+weatherState.phenomenon) : ''; showSelected('weather','leer = kein signifikantes Wetter')}
+function updateClouds(){const special=document.getElementById('clouds').dataset.special||''; if(special){document.getElementById('clouds').value=special; showSelected('clouds','leer = keine Wolkengruppe'); return} const parts=[]; [1,2].forEach(n=>{const a=cloudState[n].amount, h=norm(document.getElementById('cloudH'+n).value), t=cloudState[n].type; if(a&&h) parts.push(a+h+t)}); document.getElementById('clouds').value=parts.join(' '); showSelected('clouds','leer = keine Wolkengruppe')}
+function resetButtonStates(){document.querySelectorAll('.codebtn.active').forEach(b=>b.classList.remove('active')); Object.assign(weatherState,{intensity:'',descriptor:'',phenomenon:''}); cloudState[1]={amount:'',type:''}; cloudState[2]={amount:'',type:''}; document.getElementById('clouds').dataset.special=''; ['cloudH1','cloudH2'].forEach(id=>document.getElementById(id).value=''); ['weather','clouds','trend'].forEach(id=>{const el=document.getElementById(id); if(el) el.value=''}); showSelected('weather','leer = kein signifikantes Wetter'); showSelected('clouds','leer = keine Wolkengruppe'); showSelected('trend','leer = kein Trend')}
+function wireCodeButtons(){
+ document.querySelectorAll('[data-single]').forEach(group=>group.querySelectorAll('.codebtn').forEach(btn=>btn.onclick=()=>{const id=group.dataset.single; setActiveInGroup(group,btn); document.getElementById(id).value=btn.dataset.value; showSelected(id, id==='trend'?'leer = kein Trend':id==='clouds'?'leer = keine Wolkengruppe':''); if(id==='clouds'){document.getElementById('clouds').dataset.special=btn.dataset.value; if(btn.dataset.value) {cloudState[1]={amount:'',type:''}; cloudState[2]={amount:'',type:''}; document.querySelectorAll('[data-cloud] .codebtn.active').forEach(b=>b.classList.remove('active'));} }}));
+ document.querySelectorAll('[data-weather-part]').forEach(group=>group.querySelectorAll('.codebtn').forEach(btn=>btn.onclick=()=>{setActiveInGroup(group,btn); weatherState[group.dataset.weatherPart]=btn.dataset.value; updateWeather()}));
+ document.querySelectorAll('.cloud-layer').forEach(layer=>layer.querySelectorAll('[data-cloud]').forEach(group=>group.querySelectorAll('.codebtn').forEach(btn=>btn.onclick=()=>{document.getElementById('clouds').dataset.special=''; const n=layer.dataset.layer; setActiveInGroup(group,btn); cloudState[n][group.dataset.cloud]=btn.dataset.value; updateClouds()})));
+ ['cloudH1','cloudH2'].forEach(id=>document.getElementById(id).addEventListener('input',()=>{document.getElementById('clouds').dataset.special=''; updateClouds()}));
+}
+
+function norm(v){return (v||'').toString().trim().toUpperCase().replace(/\s+/g,' ')}
+function pick(arr){return arr[Math.floor(Math.random()*arr.length)]}
+let learnDeck=[], learnIndex=0, selected=false, currentExam=exams[0];
+function buildDeck(){learnDeck=[...learningItems]; if(document.getElementById('shuffleLearn').checked) learnDeck.sort(()=>Math.random()-0.5); learnIndex=0; renderLearn()}
+function renderLearn(){selected=false; const item=learnDeck[learnIndex]; document.getElementById('learnCat').textContent=item[0]; document.getElementById('learnCode').textContent=item[1]; document.getElementById('learnCount').textContent=(learnIndex+1)+' / '+learnDeck.length; document.getElementById('learnAnswer').classList.add('hidden'); const hard=document.getElementById('hardMode').checked; let wrongs=learningItems.filter(x=>x[2]!==item[2] && (!hard || x[0]===item[0])); if(!wrongs.length) wrongs=learningItems.filter(x=>x[2]!==item[2]); const opts=[[item[2],true],[pick(wrongs)[2],false]].sort(()=>Math.random()-0.5); ['choiceA','choiceB'].forEach((id,i)=>{const b=document.getElementById(id); b.textContent=opts[i][0]; b.dataset.correct=opts[i][1]; b.className='choice';});}
+function choose(btn){ if(selected) return; selected=true; const ok=btn.dataset.correct==='true'; btn.classList.add(ok?'correct':'wrong'); [...document.querySelectorAll('.choice')].forEach(b=>{if(b.dataset.correct==='true')b.classList.add('correct')}); const item=learnDeck[learnIndex]; const box=document.getElementById('learnAnswer'); box.classList.remove('hidden'); 
+let eng='';
+for (const [code,val] of Object.entries(englishMeanings)) {
+  if(item[1]===code || item[1].startsWith(code)){
+    eng=` (${code} = ${val})`;
+    break;
+  }
+}
+box.innerHTML=(ok?'<b class="ok">Richtig.</b> ':'<b class="bad">Nicht ganz.</b> ')+`<b>${item[1]}</b> bedeutet: ${item[2]}.${eng}`;}
+function nextLearn(){learnIndex=(learnIndex+1)%learnDeck.length; renderLearn()} function prevLearn(){learnIndex=(learnIndex-1+learnDeck.length)%learnDeck.length; renderLearn()}
+function setExam(){currentExam=pick(exams); document.getElementById('examMetar').textContent=currentExam.metar; document.getElementById('examForm').reset(); resetButtonStates(); document.getElementById('examResult').textContent='Noch keine Auswertung.'}
+function evalExam(show=false){const fields=['day','time','windDir','windSpeed','gust','varWind','vis','rvr','weather','clouds','temp','dew','qnh','trend']; let rows='', score=0; for(const f of fields){const user=show?'':norm(document.getElementById(f).value); const right=norm(currentExam.a[f]); const ok=show?false:user===right || (f==='windSpeed' && String(Number(user))===String(Number(right))); if(ok) score++; rows += `<div class="item"><b>${labelName(f)}:</b> ${show?'':escapeHtml(user||'—')} ${show?'':(ok?' <span class="ok">✓</span>':' <span class="bad">✗</span>')}<br><span class="mini">Lösung: <span class="kbd">${escapeHtml(right||'leer')}</span></span></div>`;} document.getElementById('examResult').innerHTML=`<div class="score">${show?'Lösung':score+' / '+fields.length+' richtig'}</div><div class="list" style="margin-top:10px">${rows}</div>`}
+function labelName(f){return {day:'Tag',time:'UTC‑Zeit',windDir:'Windrichtung',windSpeed:'Windstärke kt',gust:'Böen kt',varWind:'Windvariabilität',vis:'Sicht',rvr:'RVR',weather:'Wetter',clouds:'Wolken',temp:'Temperatur',dew:'Taupunkt',qnh:'QNH',trend:'Trend'}[f]}
+function escapeHtml(s){return s.replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]))}
+function renderRef(){document.getElementById('referenceList').innerHTML=reference.map(([t,d])=>`<details open><summary>${t}</summary><div class="inside">${d}</div></details>`).join('')}
+
+document.querySelectorAll('.tab').forEach(t=>t.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));t.classList.add('active');document.querySelectorAll('.screen').forEach(s=>s.classList.add('hidden'));document.getElementById(t.dataset.tab).classList.remove('hidden')});
+document.getElementById('choiceA').onclick=e=>choose(e.currentTarget);document.getElementById('choiceB').onclick=e=>choose(e.currentTarget);document.getElementById('nextLearn').onclick=nextLearn;document.getElementById('prevLearn').onclick=prevLearn;document.getElementById('restartLearn').onclick=buildDeck;document.getElementById('shuffleLearn').onchange=buildDeck;document.getElementById('hardMode').onchange=renderLearn;
+document.getElementById('newExam').onclick=setExam;document.getElementById('showSolution').onclick=()=>evalExam(true);document.getElementById('examForm').onsubmit=e=>{e.preventDefault();evalExam(false)};
+wireCodeButtons(); renderRef(); buildDeck(); setExam();
+</script>
+</body>
+</html>
